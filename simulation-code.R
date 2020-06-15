@@ -103,12 +103,6 @@ dfw <- data_sets[[ 2]]
 
 # ----- Add measurement error 
 
-# Number of observations 
-#n <- 1000
-
-# Number of waves
-#waves <- 5
-
 # Number of indicators 
 k <- 3
 
@@ -177,3 +171,6 @@ names( dfw) <- c( "id",
 # Save the resulting dataframes 
 saveRDS(df, file = "longData.Rda")
 saveRDS(dfw, file = "wideData.Rda")
+
+saveRDS(n, "n.Rda")
+saveRDS(waves, "waves.Rda")
