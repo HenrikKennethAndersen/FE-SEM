@@ -1,5 +1,7 @@
 # ----- Script hooks 
 
+library( knitr)
+
 # Script hook for printing only certain lines
 
 hook_output <- knit_hooks$get("output")
