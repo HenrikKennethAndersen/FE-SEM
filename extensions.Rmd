@@ -24,9 +24,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library( formatR)
 library( knitr)
 library( lavaan)
-```
 
-```{r, code=readLines("scripthooks.R"), echo=FALSE, results=FALSE}
+source("scripthooks.R")
 ```
 
 Andersen, Henrik K. (2020). A closer look at fixed-effects regression in structural equation modeling using lavaan. 
@@ -35,7 +34,9 @@ Andersen, Henrik K. (2020). A closer look at fixed-effects regression in structu
 df <- readRDS("longData.Rda")
 dfw <- readRDS("wideData.Rda")
 
-n <- 1000
+n <- readRDS("n.Rda")
+waves <- readRDS("waves.Rda")
+
 fe_sem <- readRDS("fe_sem.Rda")
 fe_sem.fit <- readRDS("fe_sem.fit.Rda")
 ```
