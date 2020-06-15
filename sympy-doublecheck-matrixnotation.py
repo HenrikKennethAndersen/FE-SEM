@@ -192,7 +192,7 @@ print(Ly*Inverse(I - B)*z)
 
 
 # The full model-implied covariance matrix is much too large to be of any use. 
-# Instrad, if one is interested, they can save the matrix as an object and 
+# Instead, if one is interested, they can save the matrix as an object and 
 # access individual elements. E.g.,
 
 yy = (Ly*Inverse(I - B)*z)*(Ly*Inverse(I - B)*z).T
