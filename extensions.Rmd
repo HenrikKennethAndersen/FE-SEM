@@ -24,61 +24,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library( formatR)
 library( knitr)
 library( lavaan)
+```
 
-# ----- Script hook for printing only certain lines
-
-hook_output <- knit_hooks$get("output")
-knit_hooks$set(output = function(x, options) {
-   lines <- options$output.lines
-   if (is.null(lines)) {
-     return(hook_output(x, options))  # pass to default hook
-   }
-   x <- unlist(strsplit(x, "\n"))
-   more <- "..."
-   if (length(lines)==1) {        # first n lines
-     if (length(x) > lines) {
-       # truncate the output, but add ....
-       x <- c(head(x, lines), more)
-     }
-   } else {
-     x <- c(if (abs(lines[1])>1) more else NULL, 
-            x[lines], 
-            if (length(x)>lines[abs(length(lines))]) more else NULL
-           )
-   }
-   # paste these lines together
-   x <- paste(c(x, ""), collapse = "\n")
-   hook_output(x, options)
-})
-
-# From: https://community.rstudio.com/t/showing-only-the-first-few-lines-of-the-results-of-a-code-chunk/6963/2
-# Retrieved on: 26.05.2020
-
-
-# ----- Script hook to increase space between text and chunk output 
-
-hook_output_def = knitr::knit_hooks$get('output')
-knitr::knit_hooks$set(output = function(x, options) {
-  if (!is.null(options$vspaceout)) {
-    end <- paste0("\\vspace{", options$vspaceout, "}")
-    stringr::str_c(hook_output_def(x, options), end)
-  } else {
-    hook_output_def(x, options)
-  }
-})
-
-hook_source_def = knitr::knit_hooks$get('source')
-knitr::knit_hooks$set(source = function(x, options) {
-  if (!is.null(options$vspaceecho)) {
-    begin <- paste0("\\vspace{", options$vspaceecho, "}")
-    stringr::str_c(begin, hook_source_def(x, options))
-  } else {
-    hook_source_def(x, options)
-  }
-})
-
-# From: https://stackoverflow.com/questions/43379224/add-vertical-space-above-and-below-figures-code-chunks
-# Retrieved on: 04.06.2020
+```{r, code=readLines("scripthooks.R"), echo=FALSE, results=FALSE}
 ```
 
 Andersen, Henrik K. (2020). A closer look at fixed-effects regression in structural equation modeling using lavaan. 
@@ -416,50 +364,6 @@ Thus, our FE regression equation changes from $y_{t} = \beta x_{t} + \alpha + \v
 \eta_{t} & = \beta \xi_{t} + \alpha + \zeta_{t}
 \end{align}
 where $\zeta_{t}$ represents the disturbance, in other words the residual of the latent dependent variable $\eta_{t}$. 
-
-```{python, results='asis', eval=FALSE, echo=FALSE}
-# Following sympy code double-checks how to specify this model 
-# using matrix algebra. Turn eval=TRUE to see the vector y. 
-
-from sympy import *
-
-x1, x2, x3, y1, y2, y3, d1, d2, d3, e1, e2, e3, xi1, xi2, xi3, n1, n2, n3, a, z1, z2, z3, b, x11, x21, x31, x12, x22, x32, x13, x23, x33, xi1, xi2, xi3, d11, d21, d31, d12, d22, d32, d13, d23, d33, l21, l31, l22, l32, l23, l33 = symbols('x1, x2, x3, y1, y2, y3, delta1, delta2, delta3, varepsilon1, varepsilon2, varepsilon3, xi1, xi2, xi3, eta1, eta2, eta3, alpha, zeta1, zeta2, zeta3, beta, x11, x21, x31, x12, x22, x32, x13, x23, x33, xi1, xi2, xi3, delta11, delta21, delta31, delta12, delta22, delta32, delta13, delta23, delta33, lambda21, lambda31, lambda22, lambda32, lambda23, lambda33')
-
-y = Matrix([[y1],[y2],[y3],[x11],[x21],[x31],[x12],[x22],[x32],[x13],[x23],[x33]])
-Ly = Matrix([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]])
-n = Matrix([[y1],[y2],[y3],[x11],[x21],[x31],[x12],[x22],[x32],[x13],[x23],[x33],[a],[xi1],[xi2],[xi3]])
-B = Matrix([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, b, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, b, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, b],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, l21, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, l31, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, l22, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, l32, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, l23],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, l33],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-z = Matrix([[e1],[e2],[e3],[d11],[d21],[d31],[d12],[d22],[d32],[d13],[d23],[d33],[a],[xi1],[xi2],[xi3]])
-I = eye(16)
-
-print('$' + latex(Ly*Inverse(I - B)*z) + '$')
-```
 
 First, however, let us double-check that measurement error in the dependent variable only increases the error variance (thus also increasing standard errors and reducing $R^{2}$), but does not systematically bias the coefficients of interest. The next model uses the indicators of $x$ and specifies latent variables to represent the valid cross-sectional variance. The dependent variable in the model is one of the impercisely measured indicators of $y$.   
 
