@@ -21,9 +21,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library( formatR)
 library( knitr)
-```
 
-```{r, code=readLines("scripthooks.R"), echo=FALSE, results=FALSE}
+source("scripthooks.R")
 ```
 
 \newpage
@@ -373,7 +372,9 @@ y5 ~~ e*y5
 
 # An example {#ex1}
 
-```{r, code=readLines("simulation-code.R"), echo=FALSE, results=FALSE}
+```{r echo=FALSE}
+df <- readRDS("longData.Rda")
+dfw <- readRDS("wideData.Rda")
 ```
 
 To demonstrate the application of FE models in SEM, a dataset can be simulated that embodies the FE assumptions. The code for data simulation can be found in Appendix A. 
