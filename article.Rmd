@@ -25,19 +25,6 @@ library(formatR)
 library(knitr)
 library(lavaan)
 
-hook_chunk = knitr::knit_hooks$get('chunk')
-
-knitr::knit_hooks$set(chunk = function(x, options) {
-  regular_output = hook_chunk(x, options)
-  # add latex commands if chunk option singlespacing is TRUE
-  if (isTRUE(options$singlespacing)) 
-    sprintf("\\singlespacing\n %s \n\\doublespacing", regular_output)
-  else
-    regular_output
-})
-
-knitr::opts_chunk$set(echo = TRUE, singlespacing = TRUE)
-
 # Script hooks for chunk outputs
 source("scripthooks.R")
 ```

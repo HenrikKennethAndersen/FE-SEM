@@ -44,3 +44,8 @@
 % ----- Spacing
 
 %\renewenvironment{knitrout}{\vspace{10em}}{}
+
+\BeforeBeginEnvironment{equation}{\begin{singlespace}}
+\AfterEndEnvironment{equation}{\end{singlespace}\noindent\ignorespaces}
+\BeforeBeginEnvironment{align}{\begin{singlespace}}
+\AfterEndEnvironment{align}{\end{singlespace}\noindent\ignorespaces}

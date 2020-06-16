@@ -2,6 +2,24 @@
 
 library( knitr)
 
+# Make code singlespacing
+
+hook_chunk = knitr::knit_hooks$get('chunk')
+
+knitr::knit_hooks$set(chunk = function(x, options) {
+  regular_output = hook_chunk(x, options)
+  # add latex commands if chunk option singlespacing is TRUE
+  if (isTRUE(options$singlespacing)) 
+    sprintf("\\singlespacing\n %s \n\\doublespacing", regular_output)
+  else
+    regular_output
+})
+
+knitr::opts_chunk$set(echo = TRUE, singlespacing = TRUE)
+
+# From: https://stackoverflow.com/questions/56704022/how-can-i-automate-different-spacing-between-text-and-code-blocks-in-r-markdown
+# Retrieved on: 16.06.2020
+
 # Script hook for printing only certain lines
 
 hook_output <- knit_hooks$get("output")
