@@ -155,8 +155,8 @@ Notice in $\bm{\zeta}^{+}$, for the independent variables it does not matter whe
 
 Admittedly, Equations \eqref{eq:y} and \eqref{eq:eta} may not look like much yet. We can remedy this by first putting the equation for $\bm{\eta}^{+}$ in reduced form, i.e., by getting rid of the dependent variable on the r.h.s.: 
 \begin{align}
-\bm{\eta}^{+} & = \bm{\eta}^{+}\bm{B} + \bm{\zeta}^{+} \\
-\bm{\eta}^{+} - \bm{\eta}^{+}\bm{B} & = \bm{\zeta}^{+} \\
+\bm{\eta}^{+} & = \bm{B}\bm{\eta}^{+} + \bm{\zeta}^{+} \\
+\bm{\eta}^{+} - \bm{B}\bm{\eta}^{+} & = \bm{\zeta}^{+} \\
 (\bm{I} - \bm{B})\bm{\eta}^{+} & = \bm{\zeta}^{+} \\
 \bm{\eta}^{+} & = (\bm{I} - \bm{B})^{-1}\bm{\zeta}^{+},
 \end{align}
