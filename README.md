@@ -1,6 +1,8 @@
 # FE-SEM
 FE-SEM in lavaan 
 
+**Work in progress** 
+
 This article describes how to specify fixed-effects regression models in the structural equation modeling package `lavaan` in `R`.
 
 Contents:
