@@ -125,7 +125,7 @@ Because the idiosyncratic errors are assumed to be uncorrelated across units and
 
 And in fact this is exactly how a latent variable is used to account for time-invariant unobserved heterogeneity. The dependent variable at each timepoint is regressed onto the latent variable, see Figure \ref{fig:fesem}. Here, the regression weights or 'factor loadings' are fixed to one to represent our assumption that the effect of the time-invariant unobserved heterogeneity is constant over time. It also means that the estimated variance of the latent variable is equal to the \textit{average covariance between the wide-format columns of the dependent variable over time}. If $y_{it} = \alpha_{i} + \varepsilon_{it}$ is the true data generating process, then the relationship between two units over time is just $\alpha$, regardless of the time distance. Referring back to the random effects structure of $\bm{\Omega}_{\bm{\nu}_{i}}$ in Equality \eqref{eq:omeganui} for a generic unit $i$, we see the covariance on all of the off-diagonals is $\sigma^{2}_{\alpha}$. And, as we know, the average of something that does not change is that thing itself. I.e., if $T(T-1)/2 = h$ is the number of elements on either the upper- or lower triangle of $\bm{\Omega}_{\bm{\nu}_{i}}$, then we have $h^{-1}\sum_{i=1}^{h}\sigma^{2}_{\alpha} = \frac{h \sigma^{2}_{\alpha}}{h} = \sigma^{2}_{\alpha}$.
 
-To show this, consider the following matrix equation of the variances and the nonredundant covariances in a three-wave intercept-only model that follows directly from Equation \eqref{eq:wide} (assuming $\Cov(\varepsilon_{t1},\varepsilon_{si}) = 0, \ t \ne s$), and which we can solve easily with least squares:
+To show this, consider the following matrix equation of the variances and the nonredundant covariances in a three-wave intercept-only model that follows directly from Equation \eqref{eq:wide} (assuming $\Cov(\varepsilon_{ti},\varepsilon_{si}) = 0, \ t \ne s$), and which we can solve easily with least squares:
 \begin{align}
 \bm{b} & = \bm{A}\bm{x} \\
 \begin{pmatrix}
@@ -139,12 +139,12 @@ To show this, consider the following matrix equation of the variances and the no
 \begin{blockarray}{ccccc}
  & \psi & \phi_{1} & \phi_{2} & \phi_{3}  \\
  \begin{block}{c(cccc)}
- y_{1}^{2}  & 1 & 1 & 0 & 0  \\
- y_{2}y_{1} & 1 & 0 & 0 & 0  \\
- y_{3}y_{1} & 1 & 0 & 0 & 0  \\ 
- y_{2}^{2}  & 1 & 0 & 1 & 0  \\
- y_{3}y_{2} & 1 & 0 & 0 & 0  \\
- y_{3}^{2}  & 1 & 0 & 0 & 1  \\
+ \Var(y_{1})  & 1 & 1 & 0 & 0  \\
+ \Cov(y_{2},y_{1}) & 1 & 0 & 0 & 0  \\
+ \Cov(y_{3},y_{1}) & 1 & 0 & 0 & 0  \\ 
+ \Var(y_{2})  & 1 & 0 & 1 & 0  \\
+ \Cov(y_{3},y_{2}) & 1 & 0 & 0 & 0  \\
+ \Var(y_{3})  & 1 & 0 & 0 & 1  \\
  \end{block}
 \end{blockarray}
 \begin{pmatrix}
@@ -266,7 +266,7 @@ x_{3} = \delta_{3} \\
 \end{pmatrix}. 
 \end{split} \label{eq:eta}
 \end{align} 
-Notice in $\bm{\zeta}^{+}$, for the independent variables we could either write, for example $x_{1}$ or $\delta_{1}$. As mentioned above, this is due to the model notation treating the independent variables like dependent variables with variances/covariances to be estimated. For the sake of simplicity, we will ignore this subtlety and refer to the observed variable from now on, keeping in mind that if the multivariate normality assumption holds, the estimated statistics will likely be sufficiently close to the sample ones for it to not make much of a difference. 
+Notice in $\bm{\zeta}^{+}$, for the independent variables we could either write, for example $x_{t}$ or $\delta_{t}$. As mentioned above, this is due to the model notation treating the independent variables like dependent variables with variances/covariances to be estimated. For the sake of simplicity, we will ignore this subtlety and refer to the observed variable from now on, keeping in mind that if the multivariate normality assumption holds, the estimated statistics will likely be sufficiently close to the sample ones for it to not make much of a difference. 
 
 Admittedly, Equations \eqref{eq:y} and \eqref{eq:eta} may not look like much yet. We can remedy this by first putting the equation for $\bm{\eta}^{+}$ in reduced form, i.e., by getting rid of the dependent variable on the r.h.s.: 
 \begin{align}
@@ -404,7 +404,7 @@ y4 ~ b*x4
 y5 ~ b*x5
 ```
 
-The key to a FE model, as opposed to an RE model are our assumptions about the relatedness of our covariate and the individual effects, i.e., $\E[x_{t}\alpha]$. For a FE model, we want to partial out any potential covariance between the independent variable and the individual effects. This accounts for any linear relationship between $x_{t}$ and the unit-specific characteristics influencing the dependent variable. Further, allowing unrestricted covariances between the independent variable itself over time will not affect how the coefficient $\beta$ is estimated, but will have an effect on the standard errors. To mimic the behaviour of a conventional FE model, we allow the independent variable to be correlated with the individual effects and itself over time. Covariances (including covariances between a variable and itself, i.e., variances) are specified using the `~~` operator:
+The key to a FE model, as opposed to an RE model are our assumptions about the relatedness of our covariate and the individual effects, i.e., $\E[x_{t}\alpha]$. For an FE model, we want to partial out any potential covariance between the independent variable and the individual effects. This accounts for any linear relationship between $x_{t}$ and the unit-specific characteristics influencing the dependent variable. Further, allowing unrestricted covariances between the independent variable itself over time will not affect how the coefficient $\beta$ is estimated, but will have an effect on the standard errors. To mimic the behaviour of a conventional FE model, we allow the independent variable to be correlated with the individual effects and itself over time. Covariances (including covariances between a variable and itself, i.e., variances) are specified using the `~~` operator:
 
 ```{r eval=FALSE}
 a ~~ x1 + x2 + x3 + x4 + x5
