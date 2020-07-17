@@ -14,6 +14,7 @@
 %\usepackage{kbordermatrix}
 \usepackage{blkarray}
 \usepackage{setspace}
+\usepackage{etoolbox}
 \doublespacing
 
 
@@ -45,7 +46,7 @@
 
 %\renewenvironment{knitrout}{\vspace{10em}}{}
 
-\BeforeBeginEnvironment{equation}{\begin{singlespace}}
+\BeforeBeginEnvironment{equation}{\begin{singlespace}\vspace*{-\baselineskip}}
 \AfterEndEnvironment{equation}{\end{singlespace}\noindent\ignorespaces}
-\BeforeBeginEnvironment{align}{\begin{singlespace}}
+\BeforeBeginEnvironment{align}{\begin{singlespace}\vspace*{-\baselineskip}}
 \AfterEndEnvironment{align}{\end{singlespace}\noindent\ignorespaces}
