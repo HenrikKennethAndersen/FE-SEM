@@ -45,7 +45,69 @@ fe_sem.fit <- readRDS("fe_sem.fit.Rda")
 
 # Extensions {#exten}
 
-The following discusses several opportunities to extend the basic FE model outlined in the main article, and provides concrete guidance on the implementation in `lavaan`. First, I go over a number of possibilities to relax assumptions associated with the traditional FE model. Then, I discuss the issue of measurement error and show how we can use latent variables to deal with it and properly estimate the coefficients of interest. Then, I show a type of hybrid FE/RE model that allows us to control for time-invariant unobserved heterogeneity while including time-invariant predictors in the model.   
+The following goes into some more detail on the comparison of traditional FE and FE-SEM models and discusses several opportunities to extend the basic FE model outlined in the main article, and provides concrete guidance on the implementation in `lavaan`. First, I verify that the FE-SEM model does, in fact, return essentially identical results compared to the more traditional methods. Then, I go over a number of possibilities to relax assumptions associated with the traditional FE model. Then, I discuss the issue of measurement error and show how we can use latent variables to deal with it and properly estimate the coefficients of interest. Then, I show a type of hybrid FE/RE model that allows us to control for time-invariant unobserved heterogeneity while including time-invariant predictors in the model.   
+
+## A comparison with non-SEM methods using the simulated data
+
+Just to be sure that the FE-SEM results do, in fact, line up with the more traditional methods outlined in Section 2 of the main article, we can use the long-format data (see [the supplementary materials at](https://github.com/henrik-andersen/FE-SEM)) to run the typical FE model using the `plm` package [@R-plm_a]. By default, the `plm` function assumes the dataframe is structured so that the first two columns correspond to the individual and time indices, see the [documentation](https://cran.r-project.org/web/packages/plm/plm.pdf) or @R-plm_a. 
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+library(plm)
+
+# Run the FE model in plm 
+fe1 <- plm(y ~ x, 
+           effect = "individual", model = "within", 
+           data = df)
+summary(fe1)
+```
+
+From this, we see that the results are, indeed, essentially identical, with $\hat{\beta}_{FE-SEM} =`r round(lavInspect(fe_sem.fit, "list")[6, 14], 3)` \ (`r round(lavInspect(fe_sem.fit, "list")[6, 15], 3)`)$ and $\hat{\beta}_{FE} = `r round(summary(fe1)$coefficients[1, 1], 3)` \ (`r round(summary(fe1)$coefficients[1, 2], 3)`)$.
+
+Other methods of estimating FE models work in the random or mixed effects model framework. For example, we can include the cluster means per individual of the time-varying independent variables, here $x$, in the equation to achieve within estimates [@Mundlak1978; @Chamberlain1980; @Wooldridge2002]. 
+
+```{r}
+# Generate the cluster means for x per id 
+clusterMeanx <- aggregate(df$x, by = list(df$id), FUN = mean)
+# Rename the columns 
+names(clusterMeanx) <- c("id", "xbar")
+
+# Add the cluster means back into df  
+df <- merge(df, clusterMeanx, by = "id")
+```
+
+Here using the `plm` function in the `random` setup: 
+
+```{r}
+fe2 <- plm(y ~ x + xbar, 
+           effect = "individual", model = "random",
+           data = df)
+summary(fe2)
+```
+
+And here using the `lmer` function of the `lme4` package [@Bates2015] to estimate a mixed model: 
+
+```{r message=FALSE, error=FALSE, warning=FALSE}
+library(lme4)
+
+# Run the mixed model in lmer with the cluster means for x 
+mixed1 <- lmer(y ~ x + xbar + (1 | id), data = df)
+summary(mixed1)
+```
+
+In both cases, the models return the same estimates as the FE and FE-SEM models. Also, in both the `random` setup using the `plm` function, and the mixed model using the `lmer` function, we get estimates of the variance components, $\hat{\sigma}^{2}_{\alpha}$ and $\hat{\sigma}^{2}_{\varepsilon}$: 
+
+```{r}
+# Print the variance components for the plm model  
+print(ercomp(fe2), 
+      digits = 3)
+
+# Print the variance components for the lmer model 
+print(VarCorr(mixed1), 
+      comp = c("Variance", "Std.Dev"), 
+      digits = 3)
+```
+
+From this we see both models report the same estimated variance components, $\hat{\sigma}^{2}_{\alpha} = `r round(ercomp(fe2)[[1]][2], 3)`$ and $\hat{\sigma}^{2}_{\varepsilon} = `r round(ercomp(fe2)[[1]][1], 3)`$, telling us that about `r round(ercomp(fe2)[[1]][2]/(ercomp(fe2)[[1]][1] + ercomp(fe2)[[1]][2]), 3)`% of the residual variance is due to the differences between individuals (shown in the `share` column of the `ercomp()` output). This is what is referred to as the intraclass correlation coefficient, or ICC [@Hox2010]. 
 
 ## Relaxing assumptions meant to mimic traditional FE models {#relax}
 
