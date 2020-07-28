@@ -1,37 +1,25 @@
 ---
-title: \singlespacing A closer look at fixed effects regression in structural equation
-  modeling using \texttt{lavaan}
-author: "Henrik Kenneth Andersen"
-date: "`r Sys.Date()`"
-output:
+title: \singlespacing A closer look at fixed effects regression in structural equation modeling using \texttt{lavaan}
+author: Henrik Kenneth Andersen
+abstract: "This article provides an in-depth look at fixed effects regression in the structural equation modeling (SEM) framework, specifically the application of fixed effects in the `lavaan` package for `R`. It is meant as a applied guide for researchers, covering the underlying model specification, syntax, and summary output. Online supplementary materials further discuss various common extentsions to the basic fixed-effect model, demonstrating how to relax model assumptions, deal with measurement error in both the dependent and independent variables, and include time-invariant predictors in a type of hybrid fixed-/ random effects model. \\par  \\textbf{Keywords:} Fixed effects, structural equation modeling, lavaan, R, panel analysis" 
+note: "Preprint version, please do not cite without permission."
+date: "2020-07-23"
+geometry: margin=1in
+output: 
   pdf_document:
     fig_caption: yes
     number_sections: yes
-    includes:
+    includes: 
       in_header: header.tex
-abstract: "This article provides an in-depth look at fixed effects regression in the structural equation modeling (SEM) framework, specifically the application of fixed effects in the `lavaan` package for `R`. It is meant as a applied guide for researchers, covering the underlying model specification, syntax, and summary output. Online supplementary materials further discuss various common extentsions to the basic fixed-effect model, demonstrating how to relax model assumptions, deal with measurement error in both the dependent and independent variables, and include time-invariant predictors in a type of hybrid fixed-/ random effects model. \textbf{Keywords: Fixed effects, structural equation modeling, lavaan, R, panel analysis}"
-geometry: margin=1in
-note: Preprint version, please do not cite without permission.
 documentclass: article
 classoption: a4paper
 urlcolor: blue
 link-citations: yes
-bibliography: references.bib
+bibliography: references.bib   
 fontsize: 12pt
 ---
 
-```{r setup, include=FALSE}
-# Knitr options 
-knitr::opts_chunk$set(echo = TRUE)
 
-# Packages (some are repeated below, add them here as well just to be sure)
-library(formatR)
-library(knitr)
-library(lavaan)
-
-# Script hooks for chunk outputs
-source("scripthooks.R")
-```
 
 \newpage
 
@@ -441,54 +429,68 @@ This should make intuitive sense. From the observed covariance between the depen
 
 The package `lavaan` needs to be installed once with `install.packages("lavaan")`. To be able to use it, we need to load it for every new `R` session:
 
-```{r, message=FALSE, warning=FALSE, error=FALSE}
+\singlespacing
+ 
+```r
 library( lavaan)
-```
+``` 
+\doublespacing
 
 For users unfamiliar with `R`, SEM analyses can be carried out with almost no knowledge of the language. Typically, someone unfamiliar with `R` would prepare their data using some other statistical software, and then save the intended dataset as a `.csv`, `.xlsx`, `.dta`, `.sav`, etc. file. The user must then import the data, preferably as a dataframe, and the rest occurs using the `lavaan` syntax.^[There are many online tutorials for importing data in various formats, see, for example some from  [datacamp](https://www.datacamp.com/community/tutorials/r-data-import-tutorial) or [Quick-R](https://www.statmethods.net/input/importingdata.html), or any of the many posts on [stackoverflow](https://stackoverflow.com/search?q=r+import+data).] 
 
 Specifying the most basic fixed effects model, like the one shown in @Bollen2010 (the same model as Equation \eqref{eq:fe} but with just one time-varying predictor) involves four components. First, we define the latent individual effects variable using the `=~` 'measured by' or 'manifested by' [@R-lavaan] operator at the same time constraining the factor loadings at each timepoint to one. I will call the latent variable `a` to stand for $\alpha$. Constraining all of the factor loadings to one reflects our implicit assumption that the combined effect of the unit-specific unobserved factors is constant over time. This is the default behaviour of traditional POLS-based approaches to FE that use the stacked long-format data. 
 
-```{r, eval=FALSE}
+\singlespacing
+ 
+```r
 a =~ 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5
-```
+``` 
+\doublespacing
 
 Second, we regress the dependent variable on the independent variable using the `~` regression operator. With stacked, long-format data, only one regression coefficient is estimated over all observed timepoints. To have our FE-SEM model mimic this behaviour, we need to constrain the the estimated coefficient to equal over time. We do so by adding the same label to the regression coefficient at every time point. We will use the label `b` (this label was chosen arbitrarily, we could have used any letter or string of characters) and have it act as an equality constraint for the regression coefficient of interest $\beta$:
 
-```{r eval=FALSE}
+\singlespacing
+ 
+```r
 y1 ~ b*x1
 y2 ~ b*x2 
 y3 ~ b*x3
 y4 ~ b*x4
 y5 ~ b*x5
-```
+``` 
+\doublespacing
 
 The key to a FE model, as opposed to an RE model are our assumptions about the relatedness of our covariate and the individual effects, i.e., $\E[x_{t}\alpha]$. For an FE model, we want to partial out any potential covariance between the independent variable and the individual effects. This accounts for any linear relationship between $x_{t}$ and the unit-specific characteristics influencing the dependent variable. Further, allowing unrestricted covariances between the independent variable itself over time will not affect how the coefficient $\beta$ is estimated, but will have an effect on the standard errors. To mimic the behaviour of a conventional FE model, we allow the independent variable to be correlated with the individual effects and itself over time. Covariances (including covariances between a variable and itself, i.e., variances) are specified using the `~~` operator:
 
-```{r eval=FALSE}
+\singlespacing
+ 
+```r
 a ~~ x1 + x2 + x3 + x4 + x5
 x1 ~~ x2 + x3 + x4 + x5
 x2 ~~ x3 + x4 + x5
 x3 ~~ x4 + x5
 x4 ~~ x5
-```
+``` 
+\doublespacing
 
 The last component of our code involves the variances of the residuals. This component is optional, but we can constrain the residual variances to be equal over time to again mimic the behaviour of a conventional FE model using POLS on stacked data. Here, again, we use labels to make equality constraints. Because $y_{t}$ is endogenous, the `~~` operator specifies the variances of *residuals*, i.e., $\varepsilon_{t}$.   
 
-```{r eval=FALSE}
+\singlespacing
+ 
+```r
 y1 ~~ e*y1
 y2 ~~ e*y2
 y3 ~~ e*y3
 y4 ~~ e*y4
 y5 ~~ e*y5
-```
+``` 
+\doublespacing
 
 # A simulated example {#ex1}
 
-```{r echo=FALSE}
-df <- readRDS("longData.Rda")
-dfw <- readRDS("wideData.Rda")
-```
+\singlespacing
+  
+\doublespacing
 
 To demonstrate the application of FE models in SEM, a dataset can be simulated that embodies the FE assumptions. Again, the code for data simulation can be found in the [online supplementary materials](https://github.com/henrik-andersen/FE-SEM/blob/master/simulation-code.R). 
 
@@ -505,7 +507,9 @@ For the following example, a sample size of 1,000, observed over five waves, was
 
 Now, we run the FE-SEM in `lavaan`. 
 
-```{r}
+\singlespacing
+ 
+```r
 fe_sem <- '
 # Define individual effects variable 
 a =~ 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5
@@ -531,46 +535,143 @@ y5 ~~ e*y5
 fe_sem.fit <- sem(model = fe_sem, 
                   data = dfw, 
                   estimator = "ML")
-```
+``` 
+\doublespacing
 
-```{r, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE}
-saveRDS(fe_sem, "fe_sem.Rda")
-saveRDS(fe_sem.fit, "fe_sem.fit.Rda")
-```
+\singlespacing
+  
+\doublespacing
 
 We can get a summary of the model with `summary()`. The first portion of the summary output gives an overview of some basic information and fit statistics. The maximum likelihood estimator is the default, so it did not have to be explicitly selected in the fitting function call. Other estimators are available, including generalized and unweighted least squares (`GLS` and `ULS`, respectively), robust standard errors maximum likelihood (`MLM`) and several others (see [the lavaan online tutorial for more](https://lavaan.ugent.be/tutorial/est.html)).
 
-This part of the summary output also tells us that the analysis is based on 1,000 observations (missings would be shown here as well if there were any), and that the $\chi^{2}$ statistic is `r round( lavInspect( fe_sem.fit, "fit")[ "chisq"], 3)` based on `r lavInspect( fe_sem.fit, "fit")[ "df"]` degrees of freedom (55 observed covariances minus 1 error variance, 1 coefficient, 1 latent variable variance, 5 exogenous variable variances and 15 covariances for $55 - 23 = 32$ df). The p-value on the $\chi^{2}$ statistic is not significant with $p =$ `r round( lavInspect( fe_sem.fit, "fit")[ "pvalue"], 3)` which tells us the differences between the model-implied and observed covariance matrices are likely due to chance, and that the model fits the data well (given how the data was generated, it would be surprising if this were not the case). Other fit measures including typical comparative fit indices can be requested by either adding `fit.measures = TRUE` as a secondary argument to the `summary()` call, or by asking for a complete list of all available fit statistics using `lavInspect(model, "fit")` where `model` stands for the name of the fitted model, in this case `fe_sem.fit`. 
+This part of the summary output also tells us that the analysis is based on 1,000 observations (missings would be shown here as well if there were any), and that the $\chi^{2}$ statistic is 30.138 based on 32 degrees of freedom (55 observed covariances minus 1 error variance, 1 coefficient, 1 latent variable variance, 5 exogenous variable variances and 15 covariances for $55 - 23 = 32$ df). The p-value on the $\chi^{2}$ statistic is not significant with $p =$ 0.561 which tells us the differences between the model-implied and observed covariance matrices are likely due to chance, and that the model fits the data well (given how the data was generated, it would be surprising if this were not the case). Other fit measures including typical comparative fit indices can be requested by either adding `fit.measures = TRUE` as a secondary argument to the `summary()` call, or by asking for a complete list of all available fit statistics using `lavInspect(model, "fit")` where `model` stands for the name of the fitted model, in this case `fe_sem.fit`. 
 
-```{r restate model, output.lines=1:20}
+\singlespacing
+ 
+```r
 summary(fe_sem.fit)
 ```
+
+```
+## lavaan 0.6-6 ended normally after 37 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of free parameters                         31
+##   Number of equality constraints                     8
+##                                                       
+##   Number of observations                          1000
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                                30.138
+##   Degrees of freedom                                32
+##   P-value (Chi-square)                           0.561
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+...
+``` 
+\doublespacing
 
 Next the summary output shows the measurement models for the latent variables, if any. In this case the latent variable `a` for $\alpha$ is measured by each of the five observed dependent variables with factor loadings fixed to 1.0. 
 
-```{r measurement, echo=FALSE, output.lines=22:29}
-summary(fe_sem.fit)
+\singlespacing
+ 
 ```
+...
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   a =~                                                
+##     y1                1.000                           
+##     y2                1.000                           
+##     y3                1.000                           
+##     y4                1.000                           
+##     y5                1.000                           
+...
+``` 
+\doublespacing
 
-The regressions are shown next. Here, because we have constrained the regression coefficients to be equal over time (the equality constraint label `(b)` is listed to the left of the estimates), the estimate of $\beta =$ `r round( lavInspect( fe_sem.fit, "list")[6, 14], 3)` (`r round( lavInspect( fe_sem.fit, "list")[6, 15], 3)`) is repeated five times. The corresponding z- and p-values show that the coefficient is, unsurprisingly, significant. 
+The regressions are shown next. Here, because we have constrained the regression coefficients to be equal over time (the equality constraint label `(b)` is listed to the left of the estimates), the estimate of $\beta =$ 0.294 (0.016) is repeated five times. The corresponding z- and p-values show that the coefficient is, unsurprisingly, significant. 
 
-```{r regression, echo=FALSE, output.lines=31:42}
-summary(fe_sem.fit)
+\singlespacing
+ 
 ```
+...
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   y1 ~                                                
+##     x1         (b)    0.294    0.016   18.809    0.000
+##   y2 ~                                                
+##     x2         (b)    0.294    0.016   18.809    0.000
+##   y3 ~                                                
+##     x3         (b)    0.294    0.016   18.809    0.000
+##   y4 ~                                                
+##     x4         (b)    0.294    0.016   18.809    0.000
+##   y5 ~                                                
+##     x5         (b)    0.294    0.016   18.809    0.000
+...
+``` 
+\doublespacing
 
 Next, the covariance estimates are listed. First, the covariances between the latent individual effects variable and the independent variable over time are shown, and then the covariances between the independent variable with itself over time.
 
 One should always take care to double-check that there are no unintended covariances listed here. Like `Mplus`, the `lavaan` package estimates some covariances per default, without the user explicitly having to add them to the model syntax. For example, covariances between latent variables are estimated per default. If one does not wish for them to covary, it must be explicitly stated, e.g., with `f1 ~~ 0*f2`, assuming the latent variables are called `f1` and `f2`, or by overriding the default behaviour for the entire model by adding `orthogonal = TRUE` (which sets the correlation between all latent variables to zero) to the fitting call.^[This is at least the current behaviour of both the `cfa` and `sem` wrappers. In fact, both wrappers seem to be identical in terms of the default settings, see @Rosseel2020.] 
 
-```{r covariance, echo=FALSE, output.lines=44:65}
-summary(fe_sem.fit)
+\singlespacing
+ 
 ```
+...
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   a ~~                                                
+##     x1                0.844    0.055   15.355    0.000
+##     x2                0.867    0.056   15.441    0.000
+##     x3                0.845    0.055   15.400    0.000
+##     x4                0.822    0.053   15.455    0.000
+##     x5                0.820    0.053   15.572    0.000
+##   x1 ~~                                               
+##     x2                0.908    0.070   12.900    0.000
+##     x3                0.935    0.069   13.466    0.000
+##     x4                0.921    0.067   13.661    0.000
+##     x5                0.914    0.067   13.716    0.000
+##   x2 ~~                                               
+##     x3                0.889    0.070   12.675    0.000
+##     x4                0.922    0.069   13.423    0.000
+##     x5                0.889    0.068   13.165    0.000
+##   x3 ~~                                               
+##     x4                0.865    0.067   12.976    0.000
+##     x5                0.901    0.066   13.554    0.000
+##   x4 ~~                                               
+##     x5                0.850    0.064   13.285    0.000
+...
+``` 
+\doublespacing
 
 Finally, the variance estimates are listed. Here, we see that in order to mimic the behaviour of a traditional FE model, the error variances over time were specified to be equal using the equality constraint `(e)`. Notice the `.` beside `y1`, `y2`, etc.: this indicates that the listed variance refers to an endogenous variable, and that it is thus an error variance. In this case, these refer to the variances of $\varepsilon_{t}$. After that, the variances of the exogenous variables, both observed and unobserved are listed. 
 
-```{r variance, echo=FALSE, output.lines=67:79}
-summary(fe_sem.fit)
+\singlespacing
+ 
 ```
+...
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##    .y1         (e)    1.022    0.023   44.721    0.000
+##    .y2         (e)    1.022    0.023   44.721    0.000
+##    .y3         (e)    1.022    0.023   44.721    0.000
+##    .y4         (e)    1.022    0.023   44.721    0.000
+##    .y5         (e)    1.022    0.023   44.721    0.000
+##     x1                1.986    0.089   22.361    0.000
+##     x2                2.079    0.093   22.361    0.000
+##     x3                1.987    0.089   22.361    0.000
+##     x4                1.860    0.083   22.361    0.000
+##     x5                1.814    0.081   22.361    0.000
+##     a                 0.799    0.052   15.310    0.000
+``` 
+\doublespacing
 
 # Conclusion 
 

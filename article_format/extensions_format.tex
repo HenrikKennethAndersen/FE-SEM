@@ -1,0 +1,1181 @@
+% interactcadsample.tex
+% v1.03 - April 2017
+
+\documentclass[]{interact}
+
+\usepackage{epstopdf}% To incorporate .eps illustrations using PDFLaTeX, etc.
+\usepackage{subfigure}% Support for small, `sub' figures and tables
+%\usepackage[nolists,tablesfirst]{endfloat}% To `separate' figures and tables from text if required
+
+\usepackage{natbib}% Citation support using natbib.sty
+\bibpunct[, ]{(}{)}{;}{a}{}{,}% Citation support using natbib.sty
+\renewcommand\bibfont{\fontsize{10}{12}\selectfont}% Bibliography support using natbib.sty
+
+\theoremstyle{plain}% Theorem-like structures provided by amsthm.sty
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newtheorem{notation}{Notation}
+
+% see https://stackoverflow.com/a/47122900
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+
+
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage{bm}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usepackage[nofiglist]{endfloat}
+\usepackage{blkarray}
+\usepackage{setspace}
+\usepackage{etoolbox}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\Var}{\mathrm{Var}}
+\DeclareMathOperator{\Cov}{\mathrm{Cov}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\mathtoolsset{showonlyrefs}
+\BeforeBeginEnvironment{equation}{\begin{singlespace}\vspace*{-\baselineskip}}
+\AfterEndEnvironment{equation}{\end{singlespace}\noindent\ignorespaces}
+\BeforeBeginEnvironment{align}{\begin{singlespace}\vspace*{-\baselineskip}}
+\AfterEndEnvironment{align}{\end{singlespace}\noindent\ignorespaces}
+\def\tightlist{}
+\pagenumbering{gobble}
+
+\begin{document}
+
+\articletype{}
+
+\title{Supplementary materials for:\\
+A closer look at fixed effects regression in structural equation
+modeling using \texttt{lavaan}}
+
+
+\author{\name{Henrik Kenneth Andersen$^{a}$}
+\affil{$^{a}$Chemnitz University of Technology, Institute of Sociology, Chair for
+Empirical Social Research, Thüringer Weg 9, 09126 Chemnitz, Germany}
+}
+
+\thanks{CONTACT Henrik Kenneth Andersen. Email: \href{mailto:henrik.andersen@soziologie.tu-chemnitz.de}{\nolinkurl{henrik.andersen@soziologie.tu-chemnitz.de}}}
+
+\maketitle
+
+
+
+\singlespacing
+
+\doublespacing
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+The following goes into some more detail on the comparison of
+traditional FE and FE-SEM models and discusses several opportunities to
+extend the basic FE model outlined in the main article, and provides
+concrete guidance on the implementation in \texttt{lavaan}. First, I
+verify that the FE-SEM model does, in fact, return essentially identical
+results compared to the more traditional methods. Then, I go over a
+number of possibilities to relax assumptions associated with the
+traditional FE model. Then, I discuss the issue of measurement error and
+show how we can use latent variables to deal with it and properly
+estimate the coefficients of interest. Then, I show a type of hybrid
+FE/RE model that allows us to control for time-invariant unobserved
+heterogeneity while including time-invariant predictors in the model.
+
+\hypertarget{a-comparison-with-non-sem-methods}{%
+\section{A comparison with non-SEM
+methods}\label{a-comparison-with-non-sem-methods}}
+
+Just to be sure that the FE-SEM results do, in fact, line up with the
+more traditional methods outlined in Section 2 of the main article, we
+can use the long-format data (see
+\href{https://github.com/henrik-andersen/FE-SEM}{the supplementary
+materials at}) to run the typical FE model using the \texttt{plm}
+package \citep{R-plm_a}. By default, the \texttt{plm} function assumes
+the dataframe is structured so that the first two columns correspond to
+the individual and time indices, see the
+\href{https://cran.r-project.org/web/packages/plm/plm.pdf}{documentation}
+or \citet{R-plm_a}.
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(plm)}
+
+\CommentTok{# Run the FE model in plm }
+\NormalTok{fe1 <-}\StringTok{ }\KeywordTok{plm}\NormalTok{(y }\OperatorTok{~}\StringTok{ }\NormalTok{x, }
+           \DataTypeTok{effect =} \StringTok{"individual"}\NormalTok{, }\DataTypeTok{model =} \StringTok{"within"}\NormalTok{, }
+           \DataTypeTok{data =}\NormalTok{ df)}
+\KeywordTok{summary}\NormalTok{(fe1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Oneway (individual) effect Within Model
+## 
+## Call:
+## plm(formula = y ~ x, data = df, effect = "individual", model = "within")
+## 
+## Balanced Panel: n = 1000, T = 5, N = 5000
+## 
+## Residuals:
+##      Min.   1st Qu.    Median   3rd Qu.      Max. 
+## -3.720902 -0.601550 -0.021365  0.600833  3.238716 
+## 
+## Coefficients:
+##   Estimate Std. Error t-value  Pr(>|t|)    
+## x 0.293907   0.015635  18.798 < 2.2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Total Sum of Squares:    4452.6
+## Residual Sum of Squares: 4091.1
+## R-Squared:      0.081192
+## Adj. R-Squared: -0.14857
+## F-statistic: 353.377 on 1 and 3999 DF, p-value: < 2.22e-16
+\end{verbatim}
+
+\doublespacing
+
+From this, we see that the results are, indeed, essentially identical,
+with \(\hat{\beta}_{FE-SEM} =0.294 \ (0.016)\) and
+\(\hat{\beta}_{FE} = 0.294 \ (0.016)\).
+
+Other methods of estimating FE models work in the random or mixed
+effects model framework. For example, we can include the cluster means
+per individual of the time-varying independent variables, here \(x\), in
+the equation to achieve within estimates
+\citep{Mundlak1978, Chamberlain1980, Wooldridge2002}.
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Generate the cluster means for x per id }
+\NormalTok{clusterMeanx <-}\StringTok{ }\KeywordTok{aggregate}\NormalTok{(df}\OperatorTok{$}\NormalTok{x, }\DataTypeTok{by =} \KeywordTok{list}\NormalTok{(df}\OperatorTok{$}\NormalTok{id), }\DataTypeTok{FUN =}\NormalTok{ mean)}
+\CommentTok{# Rename the columns }
+\KeywordTok{names}\NormalTok{(clusterMeanx) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"id"}\NormalTok{, }\StringTok{"xbar"}\NormalTok{)}
+
+\CommentTok{# Add the cluster means back into df  }
+\NormalTok{df <-}\StringTok{ }\KeywordTok{merge}\NormalTok{(df, clusterMeanx, }\DataTypeTok{by =} \StringTok{"id"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\doublespacing
+
+Here using the \texttt{plm} function in the \texttt{random} setup:
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fe2 <-}\StringTok{ }\KeywordTok{plm}\NormalTok{(y }\OperatorTok{~}\StringTok{ }\NormalTok{x }\OperatorTok{+}\StringTok{ }\NormalTok{xbar, }
+           \DataTypeTok{effect =} \StringTok{"individual"}\NormalTok{, }\DataTypeTok{model =} \StringTok{"random"}\NormalTok{,}
+           \DataTypeTok{data =}\NormalTok{ df)}
+\KeywordTok{summary}\NormalTok{(fe2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Oneway (individual) effect Random Effect Model 
+##    (Swamy-Arora's transformation)
+## 
+## Call:
+## plm(formula = y ~ x + xbar, data = df, effect = "individual", 
+##     model = "random")
+## 
+## Balanced Panel: n = 1000, T = 5, N = 5000
+## 
+## Effects:
+##                  var std.dev share
+## idiosyncratic 1.0230  1.0115 0.862
+## individual    0.1637  0.4046 0.138
+## theta: 0.2546
+## 
+## Residuals:
+##       Min.    1st Qu.     Median    3rd Qu.       Max. 
+## -4.0697324 -0.6786344 -0.0094158  0.6678915  3.5329988 
+## 
+## Coefficients:
+##              Estimate Std. Error z-value Pr(>|z|)    
+## (Intercept) -0.022559   0.019192 -1.1754   0.2398    
+## x            0.293907   0.015635 18.7983   <2e-16 ***
+## xbar         0.757738   0.024015 31.5532   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Total Sum of Squares:    8878.9
+## Residual Sum of Squares: 5112.1
+## R-Squared:      0.42424
+## Adj. R-Squared: 0.42401
+## Chisq: 3682.01 on 2 DF, p-value: < 2.22e-16
+\end{verbatim}
+
+\doublespacing
+
+And here using the \texttt{lmer} function of the \texttt{lme4} package
+\citep{Bates2015} to estimate a mixed model:
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(lme4)}
+
+\CommentTok{# Run the mixed model in lmer with the cluster means for x }
+\NormalTok{mixed1 <-}\StringTok{ }\KeywordTok{lmer}\NormalTok{(y }\OperatorTok{~}\StringTok{ }\NormalTok{x }\OperatorTok{+}\StringTok{ }\NormalTok{xbar }\OperatorTok{+}\StringTok{ }\NormalTok{(}\DecValTok{1} \OperatorTok{|}\StringTok{ }\NormalTok{id), }\DataTypeTok{data =}\NormalTok{ df)}
+\KeywordTok{summary}\NormalTok{(mixed1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Linear mixed model fit by REML ['lmerMod']
+## Formula: y ~ x + xbar + (1 | id)
+##    Data: df
+## 
+## REML criterion at convergence: 14906.7
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.9358 -0.6464 -0.0106  0.6349  3.2002 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  id       (Intercept) 0.1637   0.4046  
+##  Residual             1.0230   1.0115  
+## Number of obs: 5000, groups:  id, 1000
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept) -0.02256    0.01919  -1.175
+## x            0.29391    0.01563  18.798
+## xbar         0.75774    0.02401  31.553
+## 
+## Correlation of Fixed Effects:
+##      (Intr) x     
+## x     0.000       
+## xbar  0.010 -0.651
+\end{verbatim}
+
+\doublespacing
+
+In both cases, the models return the same estimates as the FE and FE-SEM
+models. Also, in both the \texttt{random} setup using the \texttt{plm}
+function, and the mixed model using the \texttt{lmer} function, we get
+estimates of the variance components, \(\hat{\sigma}^{2}_{\alpha}\) and
+\(\hat{\sigma}^{2}_{\varepsilon}\):
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Print the variance components for the plm model  }
+\KeywordTok{print}\NormalTok{(}\KeywordTok{ercomp}\NormalTok{(fe2), }
+      \DataTypeTok{digits =} \DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                 var std.dev share
+## idiosyncratic 1.023   1.011  0.86
+## individual    0.164   0.405  0.14
+## theta: 0.255
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Print the variance components for the lmer model }
+\KeywordTok{print}\NormalTok{(}\KeywordTok{VarCorr}\NormalTok{(mixed1), }
+      \DataTypeTok{comp =} \KeywordTok{c}\NormalTok{(}\StringTok{"Variance"}\NormalTok{, }\StringTok{"Std.Dev"}\NormalTok{), }
+      \DataTypeTok{digits =} \DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  Groups   Name        Variance Std.Dev.
+##  id       (Intercept) 0.164    0.405   
+##  Residual             1.023    1.011
+\end{verbatim}
+
+\doublespacing
+
+From this we see both models report the same estimated variance
+components, \(\hat{\sigma}^{2}_{\alpha} = 0.164\) and
+\(\hat{\sigma}^{2}_{\varepsilon} = 1.023\), telling us that about 13.8\%
+of the residual variance is due to the differences between individuals
+(shown in the \texttt{share} column of the \texttt{ercomp()} output).
+This is what is referred to as the intraclass correlation coefficient,
+or ICC \citep{Hox2010}.
+
+\hypertarget{exten}{%
+\section{Extensions}\label{exten}}
+
+\hypertarget{relax}{%
+\subsection{Relaxing assumptions meant to mimic traditional FE
+models}\label{relax}}
+
+There are a number of implicit assumptions attached to the typical FE
+model that can be relaxed in SEM. Some of these assumptions have been
+discussed already, and a fairly comprehenisve list of assumptions can be
+found in \citet{Bollen2010}. Here, I will go over just a few,
+concentrating on the implementation in \texttt{lavaan} and the
+opportunity to empirically test whether the adjustments are justified or
+not.
+
+The assumptions we will discuss here pertain to the time-invariance of
+the effects of both the latent individual effects and the observed
+covariates, as well as a time-invariant error variance. We can also
+empirically test the correlation between the individual effects and the
+covariates to see whether a RE model is preferable to the FE model.
+
+For example, we can rewrite the original FE equation as \begin{align}
+y_{it} & = \beta_{t}x_{it} + \lambda_{t}\alpha_{i} + \varepsilon_{it}
+\end{align} where \(\beta\) becomes \(\beta_{t}\) and the implicit
+regression weight of one turns to \(\lambda_{t}\) to highlight the fact
+that the effect of \(x\) as well as \(\alpha\) on \(y\) may vary over
+time. We can furthermore easily relax the assumption of time-constant
+error variance, i.e., \(\sigma^{2}_{\varepsilon_{t}}\). As noted in the
+\href{https://github.com/henrik-andersen/FE-SEM/blob/master/article.pdf}{main
+article}, the assumption regarding
+\(\mathop{\mathrm{\mathbb{E}}}[\alpha x_{t}]\) in \(\bm{\Psi}\)
+determines whether we have an FE or RE model. We can set these to zero
+and test whether the RE model would be preferable to the FE model. In
+general, if the individual effects are truly uncorrelated with the model
+covariates, it is advisable to switch to an RE model since because it
+uses up less degrees of freedom, it will have smaller standard errors
+\citep{Bollen2010}.
+
+In the following \texttt{lavaan} code, we simply remove the factor
+loadings of one for the latent individual effect variable which allows
+them to be estimated freely at each timepoint. For the effect of the
+covariate, we can either delete the constraints \texttt{b} in
+\texttt{yt\ \textasciitilde{}\ b*xt} or give each regression a different
+label, e.g., \texttt{b1}, \texttt{b2}, \texttt{b3}, etc. Similarly, to
+allow the error variance to vary over time, we turn the constraints
+\texttt{e} into simple labels, i.e., \texttt{e1}, \texttt{e2},
+\texttt{e3}, etc., or again just delete them. In fact, regarding the
+error variances, they will be estimated necessarily, and do not need to
+be explicitly mentioned in the model syntax at all. Finally, to move
+from an FE to an RE model, we could simply constrain the correlations
+between the individual effects and the covariates to zero, i.e.,
+\texttt{a\ \textasciitilde{}\textasciitilde{}\ 0*x1\ +\ 0*x2\ +\ 0*x3\ +\ 0*x4\ +\ 0*x5}.
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fe_sem_fullyrelaxed <-}\StringTok{ '}
+\StringTok{# Define individual effects variable }
+\StringTok{a =~ y1 + y2 + y3 + y4 + y5}
+\StringTok{# Regressions, constrain coefficient to be equal over time}
+\StringTok{y1 ~ b1*x1}
+\StringTok{y2 ~ b2*x2 }
+\StringTok{y3 ~ b3*x3}
+\StringTok{y4 ~ b4*x4}
+\StringTok{y5 ~ b5*x5}
+\StringTok{# Allow unrestricted correlation between eta and covariates}
+\StringTok{a ~~ x1 + x2 + x3 + x4 + x5}
+\StringTok{# Alternatively: constrain all to 0 for RE model, or}
+\StringTok{# just individual correlations}
+\StringTok{# a ~~ 0*x1 + 0*x2 + 0*x3 + 0*x4 + 0*x5}
+\StringTok{x1 ~~ x2 + x3 + x4 + x5}
+\StringTok{x2 ~~ x3 + x4 + x5}
+\StringTok{x3 ~~ x4 + x5}
+\StringTok{x4 ~~ x5}
+\StringTok{# Constrain residual variances to be equal over time}
+\StringTok{y1 ~~ e1*y1}
+\StringTok{y2 ~~ e2*y2}
+\StringTok{y3 ~~ e3*y3}
+\StringTok{y4 ~~ e4*y4}
+\StringTok{y5 ~~ e5*y5}
+\StringTok{'}
+\NormalTok{fe_sem_fullyrelaxed.fit <-}\StringTok{ }\KeywordTok{sem}\NormalTok{( }\DataTypeTok{model =}\NormalTok{ fe_sem_fullyrelaxed, }
+                                \DataTypeTok{data =}\NormalTok{ dfw, }
+                                \DataTypeTok{estimator =} \StringTok{"ML"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\doublespacing
+
+\singlespacing
+
+\doublespacing
+
+As outlined in \citet{Bollen2010}, the researcher has the opportunity to
+test each of the assumptions empirically and decide whether a more
+parsimonious, i.e., restrictive model is justifiable. For each
+assumption, a likelihood ratio test can be carried out to determine
+whether the improvement to model fit resulting from the relaxation of
+various assumptions is significant or whether the more parsimonious
+model is preferable after all.
+
+If we use the original model \texttt{fe\_sem.fit} (from the
+\href{https://github.com/henrik-andersen/FE-SEM/blob/master/article.pdf}{main
+article}) as a starting point, the best strategy for testing these
+assumptions is to work in a stepwise fashion, relaxing one assumption at
+a time. We can begin by first constraining the correlation between
+\(\alpha\) and \(x_{t}\) to zero (\texttt{re\_sem}) for an RE model. If
+turning from an FE to an RE model does not significantly worsen model
+fit, we can go forward with the rest of the steps with the RE model. If,
+however, the fit does worsen significantly, it is likely better to stick
+with the FE model; moving forward then with it to see if a less
+restrictive FE model is preferable. We can perform a likelihood ratio
+test in \texttt{R} using the \texttt{anova()} function:
+
+\small
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{anova}\NormalTok{( fe_sem.fit, re_sem.fit)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Chi-Squared Difference Test
+## 
+##            Df   AIC   BIC   Chisq Chisq diff Df diff Pr(>Chisq)    
+## fe_sem.fit 32 30998 31111  30.137                                  
+## re_sem.fit 37 31809 31897 850.928     820.79       5  < 2.2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\doublespacing
+\normalsize
+
+The table that is generated shows a comparison of the nested models, in
+decending order according to degrees of freedom. The RE model does not
+estimate the correlations between the individual effects and the
+covariates, so it is more parsimonious and thus listed at the bottom.
+The \texttt{Chisq} column shows the \(\chi^{2}\) statistic for both
+models and the \texttt{Chisq\ diff} column calculates the difference
+between the two. Obviously, according to the DGP, the correlation
+between the individual effects and \(x_{t}\) is not zero, so fixing
+these to zero leads to a substantial amount of misfit. The last column
+puts the \(\chi^{2}\) difference in relation to the difference in
+degrees of freedom and gives a p-value for the probability that the
+difference is solely due to chance. Here, the change in \(\chi^{2}\) is
+highly significant, so the FE model should be retained.
+
+After now having established once and for all that FE is our preferred
+model, we can begin relaxing the rest of the assumptions. I show the
+following merely as a demonstration of the procedure, we know already
+from the DGP that the parsimonious model as specified in
+\texttt{fe\_sem.fit} is appropriate. We can next allow the error
+variances (\texttt{fe\_semb.fit}), the effect of \(x\) on \(y\)
+(\texttt{fe\_semc.fit}) and finally the factor loadings of the
+individual effects (\texttt{fe\_semd.fit}) all to vary over time.
+
+\singlespacing
+
+\doublespacing
+
+\small
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{anova}\NormalTok{( fe_sem.fit, fe_semb.fit, fe_semc.fit, fe_semd.fit)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Chi-Squared Difference Test
+## 
+##             Df   AIC   BIC  Chisq Chisq diff Df diff Pr(>Chisq)
+## fe_semd.fit 20 31017 31189 25.140                              
+## fe_semc.fit 24 31010 31162 25.764     0.6249       4     0.9603
+## fe_semb.fit 28 31003 31135 26.686     0.9215       4     0.9215
+## fe_sem.fit  32 30998 31111 30.137     3.4516       4     0.4853
+\end{verbatim}
+
+\doublespacing
+\normalsize
+
+Keep in mind that a less parsimonious model (fewer degrees of freedom)
+can never fit worse than a more parsimonious one (more degrees of
+freedom). I.e., chance variations due to sampling error mean that adding
+constraints to a model will tend to always worsen fit, at least
+minimally. The question here is whether the improvement to fit by
+loosening constraints is meaningful or not. In the table above, we
+should not expect any meaningful improvements moving from
+\texttt{fe\_sem.fit} to \texttt{fe\_semd.fit}. Here, using simulated
+data, we have the luxury of knowing that any significant differences in
+\(\chi^{2}\) are due to chance. With real data, it is up to the
+researcher to apply their best judgment and decide whether the results
+are plausible or not.
+
+\hypertarget{measerr}{%
+\subsection{Measurement error}\label{measerr}}
+
+What if the observed variables are not measured perfectly? Then what we
+observe, call them \(\tilde{x}_{t}\) and \(\tilde{y}_{t}\) are
+composites of the true score we are after, i.e., \(x_{t}\) and
+\(y_{t}\), plus an additive measurement error portion: \begin{align}
+\tilde{x}_{t} & = x_{t} + \upsilon_{t}, \\
+\tilde{y}_{t} & = y_{t} + \nu_{t}.
+\end{align} How does this affect our model? Well, first notice that
+measurement error in the dependent variable is typically less of a
+serious problem than measurement error in the independent variables. Let
+us assume again mean-centered variables so that we can ignore the
+intercept, and consider the following simple bivariate equation:
+\begin{align}
+y & = \beta x + \varepsilon
+\end{align} if \(y\) is measured imperfectly and what we observe is
+\(\tilde{y} = y + \nu\), then we can rewrite the equation as:
+\begin{align}
+(\tilde{y} - \nu) & = \beta x + \varepsilon \\
+\tilde{y} & = \beta x + \varepsilon + \nu.
+\end{align} The measurement error in \(y\) just gets added to the
+regression error. As long as \(\nu\) is uncorrelated with \(x\), then
+the regression coefficient will be unbiased
+\citep{Pischke2007, Wooldridge2009}. However, this will increase the
+error variance and thus make the estimates less precise.
+
+We will look at the effect of measurement error in the dependent
+variable using an example shortly. For now though, let us be safe in the
+knowledge that the coefficient of interest is likely unbiased, and
+concentrate on the more serious problem of error in the independent
+variable.
+
+The intuition behind the problem of measurement error in the independent
+variable(s) can be explained as follows. Take
+\(\tilde{x} = x + \upsilon\) and substitute this into the equation for
+\(y\): \begin{align}
+y & = \beta x + \varepsilon \\
+ & = \beta(\tilde{x} - \upsilon) + \varepsilon \\
+ & = \beta\tilde{x} + (\varepsilon - \beta\upsilon).
+\end{align} Since \(\tilde{x}\) is obviously correlated with
+\(\upsilon\) (unless the variance of \(\upsilon\) is so small so that
+the correlation is essentially negligible), then the composite error in
+this regression is also correlated with the independent variable and
+thus the estimated coefficient of \(\beta\) will be biased.
+
+\hypertarget{the-consequences-of-measurement-error}{%
+\subsubsection{The consequences of measurement
+error}\label{the-consequences-of-measurement-error}}
+
+To demonstrate the effect of measurement error on the FE-SEM model, and
+then provide a strategy for dealing with measurement error in SEM, the
+\href{https://github.com/henrik-andersen/FE-SEM/blob/master/simulation-code.R}{simulated
+dataset} generates multiple \emph{indicators} of the independent and
+dependent variables that all measure the intended variable imprecisely.
+Returning to our panel data, we have three indicators of each the
+independent and dependent variable, per timepoint:\\
+\begin{align}
+\tilde{x}_{kt} & = x_{t} + \upsilon_{kt}, \\
+\tilde{y}_{kt} & = y_{t} + \nu_{kt}
+\end{align} where \(k = 1, 2, 3\) and \(t = 1, ..., T\). This is like
+repeatedly presenting a respondent with a multi-item scale designed to
+measure things like stress, depression, xenophobia, etc. over the course
+of a panel study. To create the observed indicators, a random amount of
+measurement error (ranging from
+\(\{\sigma^{2}_{\upsilon_{k}}, \sigma^{2}_{\nu_{k}}\}\in \{1.0, 1.1, 1.2, 1.3, 1.4, 1.5\}\))
+was added to the true variables, again see
+\href{https://github.com/henrik-andersen/FE-SEM/blob/master/simulation-code.R}{the
+simulation code}.
+
+Let us first focus on the issue of imprecise measurements of the
+independent variable of interest and run the same FE-SEM model above,
+but this time we will use one of the measurement error sullied
+indicators, here \(\tilde{x}_{1t}\), instead of the true independent
+variable, \(x_{t}\). As for the naming conventions in the \texttt{R}
+code, \texttt{x11} stands for the first indicator (\(k = 1\)) at the
+first point in time (\(t = 1\)), whereas for example \texttt{x35} stands
+for the third indicator (\(k = 3\)) at the fifth point in time
+(\(t = 5\)).
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fe_sem2 <-}\StringTok{ '}
+\StringTok{# Define individual effects variable }
+\StringTok{a =~ 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5}
+\StringTok{# Regressions, constrain coefficient to be equal over time}
+\StringTok{# Now the imprecisely measured indicator tilde\{x\}_kt}
+\StringTok{# instead of the true variable x_t}
+\StringTok{y1 ~ b*x11 }
+\StringTok{y2 ~ b*x12 }
+\StringTok{y3 ~ b*x13}
+\StringTok{y4 ~ b*x14}
+\StringTok{y5 ~ b*x15}
+\StringTok{# Allow unrestricted correlation between eta and covariates}
+\StringTok{a ~~ x11 + x12 + x13 + x14 + x15}
+\StringTok{x11 ~~ x12 + x13 + x14 + x15}
+\StringTok{x12 ~~ x13 + x14 + x15}
+\StringTok{x13 ~~ x14 + x15}
+\StringTok{x14 ~~ x15}
+\StringTok{# Constrain residual variances to be equal over time}
+\StringTok{y1 ~~ e*y1}
+\StringTok{y2 ~~ e*y2}
+\StringTok{y3 ~~ e*y3}
+\StringTok{y4 ~~ e*y4}
+\StringTok{y5 ~~ e*y5}
+\StringTok{'}
+\NormalTok{fe_sem2.fit <-}\StringTok{ }\KeywordTok{sem}\NormalTok{( }\DataTypeTok{model =}\NormalTok{ fe_sem2, }
+                    \DataTypeTok{data =}\NormalTok{ dfw, }
+                    \DataTypeTok{estimator =} \StringTok{"ML"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\doublespacing
+
+Now, for the sake of brevity, let us look just at the estimated
+coefficients for \(\beta\).
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{( fe_sem2.fit)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+...
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   y1 ~                                                
+##     x11        (b)    0.091    0.009    9.611    0.000
+##   y2 ~                                                
+##     x12        (b)    0.091    0.009    9.611    0.000
+##   y3 ~                                                
+##     x13        (b)    0.091    0.009    9.611    0.000
+##   y4 ~                                                
+##     x14        (b)    0.091    0.009    9.611    0.000
+##   y5 ~                                                
+##     x15        (b)    0.091    0.009    9.611    0.000
+## 
+...
+\end{verbatim}
+
+\doublespacing
+
+Obviously, the estimated coefficient \(\hat{\beta} =\) 0.091 is
+substantially smaller than the true population coefficient of
+\(\beta = 0.3\). And the discrepancy is not just due to sampling error.
+In fact, we can derive the bias we are observing here.
+
+For a simple bivariate regression model, it is straightforward to
+quantify the bias due to measurement error. It will be \begin{align}
+\mathop{\mathrm{\mathrm{Cov}}}(y, \tilde{x}) & = \mathop{\mathrm{\mathbb{E}}}[y \tilde{x}] \\
+ & = \mathop{\mathrm{\mathbb{E}}}[(\beta\tilde{x} + \varepsilon)\tilde{x}] \\
+ & = \mathop{\mathrm{\mathbb{E}}}[\beta\tilde{x}^{2} + \varepsilon \tilde{x}] \\
+ & = \beta \mathop{\mathrm{\mathrm{Var}}}(\tilde{x}) \\
+\hat{\beta} & = \frac{\mathop{\mathrm{\mathrm{Cov}}}(y, \tilde{x})}{\mathop{\mathrm{\mathrm{Var}}}(\tilde{x})} \\
+ & = \frac{\mathop{\mathrm{\mathbb{E}}}[(\beta x + \varepsilon)(x + \upsilon)]}{\mathop{\mathrm{\mathbb{E}}}[(x + \upsilon)^{2}]} \\
+ & = \frac{\mathop{\mathrm{\mathbb{E}}}[\beta x^{2} + \beta x \upsilon + \varepsilon x + \varepsilon \upsilon]}{\mathop{\mathrm{\mathbb{E}}}[x^{2} + 2 x \upsilon + \upsilon^{2}]} \\
+ & = \beta \frac{\mathop{\mathrm{\mathrm{Var}}}(x)}{\mathop{\mathrm{\mathrm{Var}}}(x) + \mathop{\mathrm{\mathrm{Var}}}(\upsilon)}.
+\end{align} which results if we assume that
+\(\mathop{\mathrm{\mathbb{E}}}[x \upsilon] = 0\),
+\(\mathop{\mathrm{\mathbb{E}}}[x \varepsilon] = 0\),
+\(\mathop{\mathrm{\mathbb{E}}}[\tilde{x} \varepsilon] = 0\) and
+\(\mathop{\mathrm{\mathbb{E}}}[\varepsilon \upsilon] = 0\)
+\citep{Wooldridge2009}. However, the model we are interested is not a
+bivariate model, so what was the point of showing the this? For one, it
+points out that the bias will always move the estimated coefficient
+closer to 0, since
+\(\mathop{\mathrm{\mathrm{Var}}}(x) \le \mathop{\mathrm{\mathrm{Var}}}(x) + \mathop{\mathrm{\mathrm{Var}}}(\upsilon)\).
+This means positive effects will be biased downwards and negative
+effects biased upwards, always towards zero. This is why it is referred
+to as \emph{attenuation bias}. Second, it will help to familiarize
+ourselves with this equation to better understand the one for the
+multivariate case.
+
+Indeed, the magnitude of the bias in a multivariate model is somewhat
+more complex to derive, but it will be \begin{align}
+\hat{\beta} & = \beta \frac{\mathop{\mathrm{\mathrm{Var}}}(\theta)}{\mathop{\mathrm{\mathrm{Var}}}(\theta) + \mathop{\mathrm{\mathrm{Var}}}(\upsilon)}
+\end{align} where \(\theta\) is just the residual of a regression in
+which the true underlying variable is regressed on all other covariates.
+In this case, we need to regress \(x_{t}\) on \(\alpha_{1}\) and
+\(\alpha_{2}\) for:
+\(x_{t} = \tau + \gamma_{1}\alpha_{1} + \gamma_{2}\alpha_{2} + \theta_{t}\)
+where \(\tau\) is the intercept, and \(\gamma_{1}\), \(\gamma_{2}\) are
+the regression coefficients and \(\theta_{t}\) is the residual
+\citep[p.~318--320]{Wooldridge2009}.
+
+Normally it is not possible to reconstruct the bias since in cases where
+we have to rely on indicators, we would not know the true underlying
+variable. Furthermore, in the case of a fixed-effects model, the
+covariates are the unobserved time-invariant characteristics. However,
+because we are working with simulated data, we have everything we need.
+Going back to the results above, we can get the residuals of \(x_{t}\)
+by either running a regression and saving the residuals, or we could
+skip a step and get them directly using the `residual maker' matrix
+\citep{Ruettenauer2020} which is
+\(\bm{M} = \bm{I} - \bm{A}(\bm{A}^{\intercal}\bm{A})^{-1}\bm{A}^{\intercal}\)
+and
+\(\bm{A} = \begin{pmatrix}\bm{\iota}_{n} & \bm{\alpha_{1}} & \bm{\alpha_{2}}\end{pmatrix}\)
+is the \(n \times 3\) matrix of the covariates (plus a constant).
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Make the n x n identity matrix}
+\NormalTok{Id <-}\StringTok{ }\KeywordTok{diag}\NormalTok{( n)}
+
+\CommentTok{# n x 2 matrix of covariates a1 and a2}
+\NormalTok{A <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{( }\KeywordTok{c}\NormalTok{( }\KeywordTok{rep}\NormalTok{( }\DecValTok{1}\NormalTok{, n), dfw}\OperatorTok{$}\NormalTok{a1, dfw}\OperatorTok{$}\NormalTok{a2), }
+             \DataTypeTok{nrow =}\NormalTok{ n, }\DataTypeTok{ncol =} \DecValTok{3}\NormalTok{)}
+
+\CommentTok{# The residual maker matrix M = I - A(A'A)^-1 A'}
+\NormalTok{M <-}\StringTok{ }\NormalTok{Id }\OperatorTok{-}\StringTok{ }\NormalTok{A }\OperatorTok{%*%}\StringTok{ }\KeywordTok{solve}\NormalTok{( }\KeywordTok{t}\NormalTok{( A) }\OperatorTok{%*%}\StringTok{ }\NormalTok{A) }\OperatorTok{%*%}\StringTok{ }\KeywordTok{t}\NormalTok{( A)}
+
+\CommentTok{# Save the residuals, t for 'theta'}
+\NormalTok{t <-}\StringTok{ }\NormalTok{M }\OperatorTok{%*%}\StringTok{ }\NormalTok{dfw}\OperatorTok{$}\NormalTok{x1}
+
+\CommentTok{# Re-run the FE model from above with the 'true' }
+\CommentTok{# independent variable for the correct estimate for beta }
+\NormalTok{fe_sem.fit <-}\StringTok{ }\KeywordTok{sem}\NormalTok{( }\DataTypeTok{model =}\NormalTok{ fe_sem, }\DataTypeTok{data =}\NormalTok{ dfw, }\DataTypeTok{estimator =} \StringTok{"ML"}\NormalTok{)}
+
+\CommentTok{# The equation for the biased beta }
+\KeywordTok{lavInspect}\NormalTok{( fe_sem.fit, }\StringTok{"list"}\NormalTok{)[ }\DecValTok{6}\NormalTok{, }\DecValTok{14}\NormalTok{]}\OperatorTok{*}
+\StringTok{  }\NormalTok{(( }\KeywordTok{var}\NormalTok{( t))}\OperatorTok{/}\NormalTok{( }\KeywordTok{var}\NormalTok{( t) }\OperatorTok{+}\StringTok{ }\KeywordTok{var}\NormalTok{( dfw}\OperatorTok{$}\NormalTok{x11 }\OperatorTok{-}\StringTok{ }\NormalTok{dfw}\OperatorTok{$}\NormalTok{x1)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           [,1]
+## [1,] 0.1027325
+\end{verbatim}
+
+\doublespacing
+
+\singlespacing
+
+\doublespacing
+
+From this we can see that the biased estimate above of \(\hat{\beta} =\)
+0.091 roughly comes from
+\(\beta \frac{\mathop{\mathrm{\mathrm{Var}}}(\theta_{t})}{\mathop{\mathrm{\mathrm{Var}}}(\theta_{t}) + \mathop{\mathrm{\mathrm{Var}}}(\upsilon_{t})} = 0.294 \frac{1.054}{3.018}\)
+= 0.103; `roughly' because the equation here is the population equation.
+Due to sampling error, the estimates will tend vary slightly.
+
+\hypertarget{using-latent-variables-to-deal-with-measurement-error}{%
+\subsubsection{Using latent variables to deal with measurement
+error}\label{using-latent-variables-to-deal-with-measurement-error}}
+
+The way we deal with measurement error in SEM is surprisingly similar to
+the logic of fixed-effects regression. Namely, if we have multiple
+cross-sectional observations of the underlying construct of interest,
+then we can define a latent variable that represents the common variance
+across those multiple variables. Contrast this with the use of
+longitudinal repeated measures to isolate the common variance across
+time.
+
+So, if we do in fact have multiple cross-sectional indicators for the
+underlying variables of interest, then we can partition them into an
+explained and unexplained portion:\\
+\begin{align}
+x_{kt} & = \lambda_{kt}^{x}\xi_{t} + \delta_{kt}, \\
+y_{kt} & = \lambda_{kt}^{y}\eta_{t} + \varepsilon_{kt},
+\end{align} where \(x_{kt}\) and \(y_{kt}\) are the \(k^{th}\)
+indicators, \(\xi_{t}\) and \(\eta_{t}\) are latent factors representing
+the common variance across the cross-sectional repeated measures, and
+\(\delta_{kt}\) and \(\varepsilon_{kt}\) are the unexplained portions of
+\(x_{t}\) and \(y_{t}\), respectively. The latent factors are linked to
+the observed indicators through the factor loadings \(\lambda_{kt}\).
+
+Thus, our FE regression equation changes from
+\(y_{t} = \beta x_{t} + \alpha + \varepsilon_{t}\) to: \begin{align}
+\eta_{t} & = \beta \xi_{t} + \alpha + \zeta_{t}
+\end{align} where \(\zeta_{t}\) represents the disturbance, in other
+words the residual of the latent dependent variable \(\eta_{t}\). First,
+however, let us double-check that measurement error in the dependent
+variable only increases the error variance (thus also increasing
+standard errors and reducing \(R^{2}\)), but does not systematically
+bias the coefficients of interest. The next model uses the indicators of
+\(x\) and specifies latent variables (\(\xi_{t}\), \texttt{xi} in the
+code) to represent the valid cross-sectional variance. The dependent
+variable in the model is one of the impercisely measured indicators of
+\(y\).
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fe_sem3 <-}\StringTok{ '}
+\StringTok{# Define individual effects variable }
+\StringTok{a =~ 1*y11 + 1*y12 + 1*y13 + 1*y14 + 1*y15}
+\StringTok{# Measurement model for independent variables, xi }
+\StringTok{xi1 =~ 1*x11 + x21 + x31 }
+\StringTok{xi2 =~ 1*x12 + x22 + x32}
+\StringTok{xi3 =~ 1*x13 + x23 + x33}
+\StringTok{xi4 =~ 1*x14 + x24 + x34}
+\StringTok{xi5 =~ 1*x15 + x25 + x35}
+\StringTok{# Regressions, constrain coefficient to be equal over time}
+\StringTok{y11 ~ b*xi1}
+\StringTok{y12 ~ b*xi2 }
+\StringTok{y13 ~ b*xi3}
+\StringTok{y14 ~ b*xi4}
+\StringTok{y15 ~ b*xi5}
+\StringTok{# Allow unrestricted correlation between eta and covariates}
+\StringTok{a ~~ xi1 + xi2 + xi3 + xi4 + xi5}
+\StringTok{xi1 ~~ xi2 + xi3 + xi4 + xi5}
+\StringTok{xi2 ~~ xi3 + xi4 + xi5}
+\StringTok{xi3 ~~ xi4 + xi5}
+\StringTok{xi4 ~~ xi5}
+\StringTok{# Constrain residual variances to be equal over time}
+\StringTok{y11 ~~ e*y11}
+\StringTok{y12 ~~ e*y12}
+\StringTok{y13 ~~ e*y13}
+\StringTok{y14 ~~ e*y14}
+\StringTok{y15 ~~ e*y15}
+\StringTok{'}
+\NormalTok{fe_sem3.fit <-}\StringTok{ }\KeywordTok{sem}\NormalTok{( }\DataTypeTok{model =}\NormalTok{ fe_sem3, }
+                    \DataTypeTok{data =}\NormalTok{ dfw, }
+                    \DataTypeTok{estimator =} \StringTok{"ML"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\doublespacing
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{( fe_sem3.fit)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+...
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   y11 ~                                               
+##     xi1        (b)    0.299    0.029   10.302    0.000
+##   y12 ~                                               
+##     xi2        (b)    0.299    0.029   10.302    0.000
+##   y13 ~                                               
+##     xi3        (b)    0.299    0.029   10.302    0.000
+##   y14 ~                                               
+##     xi4        (b)    0.299    0.029   10.302    0.000
+##   y15 ~                                               
+##     xi5        (b)    0.299    0.029   10.302    0.000
+...
+\end{verbatim}
+
+\doublespacing
+
+The estimated coefficient here in model \texttt{fe\_sem3.fit} is
+\(\hat{\beta}_{y_{1t},\xi_{t}} =\) 0.299 which is very close to the
+estimated coefficient in the first, correctly specified model
+\texttt{fe\_sem.fit}, where \(\hat{\beta}_{y_{t},x_{t}} =\) 0.294.
+Notice, however, that the standard error of the estimate is
+substantially larger, with 0.029 in \texttt{fe\_sem3.fit} vs.~0.016 in
+\texttt{fe\_sem.fit} in which \(y\) was measured without error. The
+explained variance (\(R^{2}\)) in the dependent variable was also much
+higher in the first model:
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{lavInspect}\NormalTok{( fe_sem.fit, }\StringTok{"r2"}\NormalTok{)[ }\DecValTok{1}\OperatorTok{:}\DecValTok{5}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        y1        y2        y3        y4        y5 
+## 0.5893174 0.5928913 0.5894869 0.5853815 0.5845328
+\end{verbatim}
+
+\doublespacing
+
+compared to the current model:
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{lavInspect}\NormalTok{( fe_sem3.fit, }\StringTok{"r2"}\NormalTok{)[ }\DecValTok{1}\OperatorTok{:}\DecValTok{5}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       y11       y12       y13       y14       y15 
+## 0.3901187 0.3914316 0.3828739 0.3850362 0.3703136
+\end{verbatim}
+
+\doublespacing
+
+Finally, to see the benefits of removing measurement error from the
+dependent variable in terms of standard errors and \(R^{2}\) statistics,
+we can specify a model with latent variables representing the valid
+cross-sectional variance in \(y\) (\texttt{n} for \(\eta\) in the code).
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fe_sem4 <-}\StringTok{ '}
+\StringTok{# Measurement model for dependent variable, n for eta}
+\StringTok{n1 =~ 1*y11 + y21 + y31}
+\StringTok{n2 =~ 1*y12 + y22 + y32}
+\StringTok{n3 =~ 1*y13 + y23 + y33}
+\StringTok{n4 =~ 1*y14 + y24 + y34}
+\StringTok{n5 =~ 1*y15 + y25 + y35}
+\StringTok{# Define individual effects variable }
+\StringTok{a =~ 1*n1 + 1*n2 + 1*n3 + 1*n4 + 1*n5}
+\StringTok{# Measurement model for independent variables, xi }
+\StringTok{xi1 =~ 1*x11 + x21 + x31 }
+\StringTok{xi2 =~ 1*x12 + x22 + x32}
+\StringTok{xi3 =~ 1*x13 + x23 + x33}
+\StringTok{xi4 =~ 1*x14 + x24 + x34}
+\StringTok{xi5 =~ 1*x15 + x25 + x35}
+\StringTok{# Regressions, constrain coefficient to be equal over time}
+\StringTok{n1 ~ b*xi1}
+\StringTok{n2 ~ b*xi2 }
+\StringTok{n3 ~ b*xi3}
+\StringTok{n4 ~ b*xi4}
+\StringTok{n5 ~ b*xi5}
+\StringTok{# Allow unrestricted correlation between eta and covariates}
+\StringTok{a ~~ xi1 + xi2 + xi3 + xi4 + xi5}
+\StringTok{xi1 ~~ xi2 + xi3 + xi4 + xi5}
+\StringTok{xi2 ~~ xi3 + xi4 + xi5}
+\StringTok{xi3 ~~ xi4 + xi5}
+\StringTok{xi4 ~~ xi5}
+\StringTok{# Constrain residual variances to be equal over time}
+\StringTok{n1 ~~ e*n1}
+\StringTok{n2 ~~ e*n2}
+\StringTok{n3 ~~ e*n3}
+\StringTok{n4 ~~ e*n4}
+\StringTok{n5 ~~ e*n5}
+\StringTok{'}
+\NormalTok{fe_sem4.fit <-}\StringTok{ }\KeywordTok{sem}\NormalTok{( }\DataTypeTok{model =}\NormalTok{ fe_sem4, }
+                    \DataTypeTok{data =}\NormalTok{ dfw, }
+                    \DataTypeTok{estimator =} \StringTok{"ML"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\doublespacing
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{( fe_sem4.fit)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+...
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   n1 ~                                                
+##     xi1        (b)    0.264    0.023   11.515    0.000
+##   n2 ~                                                
+##     xi2        (b)    0.264    0.023   11.515    0.000
+##   n3 ~                                                
+##     xi3        (b)    0.264    0.023   11.515    0.000
+##   n4 ~                                                
+##     xi4        (b)    0.264    0.023   11.515    0.000
+##   n5 ~                                                
+##     xi5        (b)    0.264    0.023   11.515    0.000
+...
+\end{verbatim}
+
+\doublespacing
+
+Here, the effect \(\hat{\beta}_{\eta_{t},\xi_{t}}\) is somewhat further
+off of the true effect of 0.3 than the preceding models. This will
+depend on how the latent variables are estimated, which themselves will
+depend on the underlying correlations between the indicators. Again, if
+the main goal of the model is to avoid bias, it may be advisable to just
+leave the manifest dependent variable as it is, and worry about
+measurement error in the independent variables.
+
+\hypertarget{time-invariant-predictors}{%
+\subsection{Time-invariant predictors}\label{time-invariant-predictors}}
+
+What if we do not just want to just control for the effects of all
+time-invariant variables, but investigate some of them in detail? Many
+time-invariant variables, like sex, birth cohort, nationality,
+education, etc. can be interesting on their own. And typically, many of
+these variables are readily available in a given dataset. The
+traditional OLS-based FE model does not allow for this, as it wipes out
+the effect of \emph{all} time-invariant variables, whether observed or
+not.
+
+In SEM, we can easily specify a type of \emph{hybrid} FE/RE model
+\citep{Bollen2010} that allows us to control for time-invariant
+unobserved heterogeneity while also investigating the effects of
+specific observed time-invariant predictors.\footnote{These types of
+  models have become well known outside of SEM as well, see for example
+  \citet{Allison2011}; \citet{Schunck2013}; \citet{Bell2018}.}
+
+In the next example, we continue with the most complex model we have
+specified so far, \texttt{fe\_sem4.fit} in which measurement error in
+both the independent and dependent variables is accounted for using
+latent variables. Now, we would like as well to specifically investigate
+the effect of \(\alpha_{2}\) on the dependent variable. The equation for
+this model changes to:
+\(\eta_{t} = \beta \xi_{t} + \alpha + \gamma \alpha_{2} + \zeta_{t}\).
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fe_sem5 <-}\StringTok{ '}
+\StringTok{# Measurement model for dependent variable, n for eta}
+\StringTok{n1 =~ 1*y11 + y21 + y31}
+\StringTok{n2 =~ 1*y12 + y22 + y32}
+\StringTok{n3 =~ 1*y13 + y23 + y33}
+\StringTok{n4 =~ 1*y14 + y24 + y34}
+\StringTok{n5 =~ 1*y15 + y25 + y35}
+\StringTok{# Define individual effects variable }
+\StringTok{a =~ 1*n1 + 1*n2 + 1*n3 + 1*n4 + 1*n5}
+\StringTok{# Measurement model for independent variables, xi }
+\StringTok{xi1 =~ 1*x11 + x21 + x31 }
+\StringTok{xi2 =~ 1*x12 + x22 + x32}
+\StringTok{xi3 =~ 1*x13 + x23 + x33}
+\StringTok{xi4 =~ 1*x14 + x24 + x34}
+\StringTok{xi5 =~ 1*x15 + x25 + x35}
+\StringTok{# Regressions, constrain coefficient to be equal over time}
+\StringTok{n1 ~ b*xi1 + g*a2}
+\StringTok{n2 ~ b*xi2 + g*a2}
+\StringTok{n3 ~ b*xi3 + g*a2}
+\StringTok{n4 ~ b*xi4 + g*a2}
+\StringTok{n5 ~ b*xi5 + g*a2}
+\StringTok{# Allow unrestricted correlation between eta and covariates}
+\StringTok{a ~~ xi1 + xi2 + xi3 + xi4 + xi5 + 0*a2}
+\StringTok{a2 ~~ xi1 + xi2 + xi3 + xi4 + xi5}
+\StringTok{xi1 ~~ xi2 + xi3 + xi4 + xi5}
+\StringTok{xi2 ~~ xi3 + xi4 + xi5}
+\StringTok{xi3 ~~ xi4 + xi5}
+\StringTok{xi4 ~~ xi5}
+\StringTok{# Constrain residual variances to be equal over time}
+\StringTok{n1 ~~ e*n1}
+\StringTok{n2 ~~ e*n2}
+\StringTok{n3 ~~ e*n3}
+\StringTok{n4 ~~ e*n4}
+\StringTok{n5 ~~ e*n5}
+\StringTok{'}
+\NormalTok{fe_sem5.fit <-}\StringTok{ }\KeywordTok{sem}\NormalTok{( }\DataTypeTok{model =}\NormalTok{ fe_sem5, }
+                    \DataTypeTok{data =}\NormalTok{ dfw, }
+                    \DataTypeTok{estimator =} \StringTok{"ML"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\doublespacing
+
+Keep in mind, based on the DGP, the true parameters are \(\beta = 0.3\)
+and \(\gamma = 0.45\).
+
+\singlespacing
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{( fe_sem5.fit)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+...
+## Regressions:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   n1 ~                                                
+##     xi1        (b)    0.265    0.023   11.515    0.000
+##     a2         (g)    0.490    0.033   14.999    0.000
+##   n2 ~                                                
+##     xi2        (b)    0.265    0.023   11.515    0.000
+##     a2         (g)    0.490    0.033   14.999    0.000
+##   n3 ~                                                
+##     xi3        (b)    0.265    0.023   11.515    0.000
+##     a2         (g)    0.490    0.033   14.999    0.000
+##   n4 ~                                                
+##     xi4        (b)    0.265    0.023   11.515    0.000
+##     a2         (g)    0.490    0.033   14.999    0.000
+##   n5 ~                                                
+##     xi5        (b)    0.265    0.023   11.515    0.000
+##     a2         (g)    0.490    0.033   14.999    0.000
+...
+\end{verbatim}
+
+\doublespacing
+
+From this we can see that such a hybrid model is does a good job of
+estimating the coefficients of interest, with \(\hat{\beta} =\) 0.265
+(0.023) and \(\hat{\gamma} =\) 0.49 (0.033).
+
+It is important, however, to realize that the unbiasedness of
+\(\hat{\gamma}\) in this model is dependent on the assumption that
+\(\mathop{\mathrm{\mathbb{E}}}[\zeta | \bm{\xi_{t}}, \alpha_{2}] = 0\).
+In other words, the idiosyncratic error is mean independent of
+\(\bm{\xi_{t}} = (\xi_{1}, \xi_{2}, ..., \xi_{T})\) as well as
+\(\alpha_{2}\). The first part is easier to accept because we are
+controlling for all potential time-invariant confounders that could
+induce a relationship between the independent variable and the error.
+The unbiasedness of \(\hat{\gamma}\), on the other hand rests on the
+assumption that the time-invariant predictor is independent of the
+error. If \(\alpha_{2}\) represented the respondent's intelligence and
+\(\eta_{t}\), the dependent variable, represented the respondent's
+income, for example, then \(\hat{\gamma}\) would be biased if both were
+dependent on a third time-invariant variable, say level of schooling, if
+it is not controlled for. For this reason, we need to treat the
+regression on a time-invariant predictor like any other regular
+multivariate regression model and look to include all plausible
+potential confounders as controls in the model, or turn to other
+methods, e.g., instrumental variables.
+
+\bibliographystyle{tfcad}
+\bibliography{references2.bib}
+
+
+
+
+\end{document}

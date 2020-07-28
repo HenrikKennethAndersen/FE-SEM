@@ -1,0 +1,57 @@
+% ----- Packages 
+
+\usepackage{booktabs}
+\usepackage{titling}
+\usepackage{bm}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{subfig}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usepackage[nofiglist]{endfloat}
+%\floatsetup[figure]{capposition=top}
+%\usepackage{kbordermatrix}
+\usepackage{blkarray}
+\usepackage{setspace}
+\usepackage{etoolbox}
+
+\doublespacing
+
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\def\tightlist{}
+
+
+% ----- Math operators 
+
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\Var}{\mathrm{Var}}
+\DeclareMathOperator{\Cov}{\mathrm{Cov}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+
+% ----- Graphics
+ 
+%\graphicspath{{./images/}}
+
+
+% ----- Equation labels
+
+\mathtoolsset{showonlyrefs}
+
+
+% ----- Page numbering 
+
+\pagenumbering{gobble}
+
+
+% ----- Spacing
+
+%\renewenvironment{knitrout}{\vspace{10em}}{}
+
+\BeforeBeginEnvironment{equation}{\begin{singlespace}\vspace*{-\baselineskip}}
+\AfterEndEnvironment{equation}{\end{singlespace}\noindent\ignorespaces}
+\BeforeBeginEnvironment{align}{\begin{singlespace}\vspace*{-\baselineskip}}
+\AfterEndEnvironment{align}{\end{singlespace}\noindent\ignorespaces}

@@ -1,0 +1,46 @@
+---
+title: |
+  A closer look at fixed effects regression in structural equation modeling using \texttt{lavaan}
+#type: ARTICLE TEMPLATE
+author:
+  - name: Henrik Kenneth Andersen
+    affil: a
+    email: henrik.andersen@soziologie.tu-chemnitz.de
+affiliation:
+  - num: a
+    address: |
+      Chemnitz University of Technology, Institute of Sociology, Chair for Empirical Social Research, Thüringer Weg 9, 09126 Chemnitz, Germany
+bibliography: references2.bib
+# appendix: appendix.tex
+abstract: |
+  This article provides an in-depth look at fixed effects regression in the structural equation modeling (SEM) framework, specifically the application of fixed effects in the `lavaan` package for `R`. It is meant as a applied guide for researchers, covering the underlying model specification, syntax, and summary output. Online supplementary materials further discuss various common extensions to the basic fixed-effect model, demonstrating how to relax model assumptions, deal with measurement error in both the dependent and independent variables, and include time-invariant predictors in a type of hybrid fixed-/ random effects model.
+keywords: |
+  Fixed effects, structural equation modeling, lavaan, R, panel analysis
+header-includes: |
+  \usepackage{hyperref}
+  \usepackage[utf8]{inputenc}
+  \usepackage{booktabs}
+  \usepackage{bm}
+  \usepackage{mathtools}
+  \usepackage{amssymb}
+  \usepackage{amsmath}
+  \usepackage{tikz}
+  \usetikzlibrary{arrows}
+  \usepackage[nofiglist]{endfloat}
+  \usepackage{blkarray}
+  \usepackage{setspace}
+  \usepackage{etoolbox}
+  \DeclareMathOperator{\E}{\mathbb{E}}
+  \DeclareMathOperator{\Var}{\mathrm{Var}}
+  \DeclareMathOperator{\Cov}{\mathrm{Cov}}
+  \DeclareMathOperator*{\argmax}{arg\,max}
+  \DeclareMathOperator*{\argmin}{arg\,min}
+  \mathtoolsset{showonlyrefs}
+  \BeforeBeginEnvironment{equation}{\begin{singlespace}\vspace*{-\baselineskip}}
+  \AfterEndEnvironment{equation}{\end{singlespace}\noindent\ignorespaces}
+  \BeforeBeginEnvironment{align}{\begin{singlespace}\vspace*{-\baselineskip}}
+  \AfterEndEnvironment{align}{\end{singlespace}\noindent\ignorespaces}
+  \def\tightlist{}
+  \pagenumbering{gobble}
+output: rticles::tf_article
+---
