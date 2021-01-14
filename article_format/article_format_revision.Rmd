@@ -1,0 +1,849 @@
+---
+title: |
+  A closer look at random and fixed effects panel regression in structural equation modeling using \texttt{lavaan}
+type: TEACHER'S CORNER
+author:
+  - name: Henrik Kenneth Andersen
+    affil: a
+    email: henrik.andersen@soziologie.tu-chemnitz.de
+affiliation:
+  - num: a
+    address: |
+      Chemnitz University of Technology, Institute of Sociology, Chair for Empirical Social Research, Thüringer Weg 9, 09126 Chemnitz, Germany
+bibliography: references2.bib
+# appendix: appendix.tex
+abstract: |
+  This article provides an in-depth look at random and fixed effects panel regression in the structural equation modeling (SEM) framework, specifically the application of fixed effects in the `lavaan` package for `R`. It is meant as a applied guide for researchers, covering the underlying model specification, syntax, and summary output. 
+keywords: |
+  Fixed effects, structural equation modeling, lavaan, R, panel regression, longitudinal data 
+header-includes: |
+  \usepackage{hyperref}
+  \usepackage[utf8]{inputenc}
+  \usepackage{booktabs}
+  \usepackage{bm}
+  \usepackage{mathtools}
+  \usepackage{amssymb}
+  \usepackage{amsmath}
+  \usepackage{tikz}
+  \usetikzlibrary{arrows}
+  \usepackage[nofiglist]{endfloat}
+  \usepackage{blkarray}
+  \usepackage{setspace}
+  \usepackage{etoolbox}
+  \DeclareMathOperator{\E}{\mathbb{E}}
+  \DeclareMathOperator{\Var}{\mathrm{Var}}
+  \DeclareMathOperator{\Cov}{\mathrm{Cov}}
+  \DeclareMathOperator*{\argmax}{arg\,max}
+  \DeclareMathOperator*{\argmin}{arg\,min}
+  \mathtoolsset{showonlyrefs}
+  \BeforeBeginEnvironment{equation}{\begin{singlespace}\vspace*{-\baselineskip}}
+  \AfterEndEnvironment{equation}{\end{singlespace}\noindent\ignorespaces}
+  \BeforeBeginEnvironment{align}{\begin{singlespace}\vspace*{-\baselineskip}}
+  \AfterEndEnvironment{align}{\end{singlespace}\noindent\ignorespaces}
+  \def\tightlist{}
+  \pagenumbering{gobble}
+output: rticles::tf_article
+---
+
+```{r setup, include=FALSE}
+# Knitr options 
+knitr::opts_chunk$set(echo = TRUE)
+
+# Packages (some are repeated below, add them here as well just to be sure)
+library(formatR)
+library(knitr)
+library(lavaan)
+
+# Script hooks for chunk outputs
+source("../scripthooks.R")
+```
+
+\newpage
+
+\pagenumbering{arabic} 
+\setcounter{page}{1}
+
+\doublespacing
+
+# Introduction {#intro}
+
+Several years ago, @Curran2011 reflected positively on the growing use of panel studies in empirical social research. Some of the strengths of panel data are well-known, e.g., the ability to establish temporal precedence, increased statistical power and the reduction of potential alternative models. However, perhaps the greatest strength of panel data is that they allow for a more rigorous testing of substantive theories. Panel data, i.e., repeated measures of the same observed units (people, schools, firms, countries, etc.), allow researchers to decompose the error term into a part that stays constant within units and the part that changes over time. The part that does not change over time can be seen as the combined effect of all time-invariant influences (e.g., sex, date of birth, nationality) on the dependent variable. Random effects (RE) and fixed effects (FE) regression involve accounting for these often unobserved time-invariant influences via a number of methods. In the case of RE models, it is assumed that the stable characteristics are unrelated to the other model covariates. In that case, the stable characteristics, or individual effects as they are often referred to as, will not affect point estimates but are a source of error variance that, if ignored, lead to larger standard errors and increase the likelihood of type II errors (failure to reject a false null hypothesis). FE models are useful when the individual effects are expected to be related to one or more of the model covariates. In that case, these unobserved stable characteristics will act as confounders and lead to biased point estimates. In controlling for these individual effects, FE regression thus accounts for a likely and common source of bias. 
+
+Structural equation modeling (SEM) is a popular regression framework. One of its main strengths is its flexibility. Not only can complex causal structures with multiple dependent variables be tested simultaneously, but in longitudinal (and, more generally, hierarchical) studies both time-varying and invariant predictors can be included, and effects can easily be allowed to vary over time. Thus researchers can allow for and study effects that increase or fade over time, or that appear only in specific periods. Beyond that, with the use of latent variables, SEM provides a way to deal with measurement error and get closer to the theoretical constructs of interest.
+
+There are a number of articles describing basic concept of panel model regression, including RE and FE regression in SEM [e.g., @Allison2011; @Bollen2010; @Teachman2001]. This article is intended as a \textit{practical guide} for researchers looking for help specifying panel regression models in SEM. It assumes some basic knowledge of SEM (i.e., minimizing the difference between observed and model-implied covariance matrices and mean vectors, maximum likelihood estimation, etc.);^[For an introduction to SEM, @Bollen1989 is a classic for good reason, and @Ferron2007 lay out exactly how SEM works in one easy to follow article.] perhaps the reader is an experienced SEM-user looking for a quick guide to estimating the static panel models discussed here; or, perhaps the reader is new to SEM, potentially because an adviser or superior has suggested it to them. For the latter case, this article reviews the assumptions associated with the more tradititonal least squares-based approach to RE and FE models, so that the implementation in SEM is more easily to follow. The article focuses on the `lavaan` [@R-lavaan] package for `R` [@R-base]. While `Mplus` [@Mplus] is arguably the most robust SEM software currently available (in terms of features like alignment, latent variable interactions, for example), the `lavaan` package has many benefits. First, like `R` it is open source and completely free. For researchers dipping their toes into SEM, there is no financial barrier to try, and no risk if they decide it is not for them. Second, the implementation of `lavaan` in the larger `R` environment is an enormous advantage. Instead of poring over reams of plain text, copying out coefficients by hand, every part of the `lavaan` output is available as an object. This means that all aspects of the model, from fit indices, to coefficients and standard errors, to the model matrices, can be accessed and easily integrated into tables and plots. Furthermore, `R` can be used for a great deal of applications. It can be used to manage and manipulate as well as simulate data, perform symbolic algebra, run more traditional analyses (e.g., multiple regression, logistic regression, principal component analysis), etc. Once one is comfortable using `R`, there is no longer any need to switch between different software for data preparation and analysis. 
+
+The following article outlines the basic idea of panel regression, the particularities of panel regression SEM, and shows its implementation in `lavaan`. Using [simulated data](https://github.com/henrik-andersen/FE-SEM/blob/master/simulation-code.R), it demonstrates and annotates the code for the most basic FE model and provides an overview of the summary output. One of the main strengths of panel SEM compared to the more traditional methods of panel analysis is its flexibility. Therefore, a number of potential extensions to the basic model, including relaxing various assumptions, dealing with measurement error in both the independent and dependent variables, as well as the inclusion of time-invariant predictors in the form of a hybrid fixed-/ random effects model, are shown in detail in the form of [online supplementary materials](https://github.com/henrik-andersen/FE-SEM/blob/master/extensions.pdf). 
+
+# Random and Fixed Effects Panel models {#panel}
+
+It is typically the case that the values for a given unit on a variable at one point in time will tend to tell us something about that unit's values at another point in time. There are two main explanations for this 'empirical regularity' [@Heckman1981; @Hsiao2014, p. 261; @Bruederl2015; @Bianconcini2018]. First, it could be that an experience at one point in time has a causal^[Here the word causal is used to mean 'non-spurious'.] effect on future experiences. In other words, experiencing an event could change the probability of the same or a similar event taking place in the future. For example, if employment increases wages, then the incentive to continue working should increase over time, thereby making it more likely that someone who was employed at one point in time will continue to be employed in the future [@Heckman1981]. When past experiences causally impact future events, the empirical regularity is referred to as 'state dependence'. So-called 'dynamic' panel models that include the lagged dependent variable in the equation for the current dependent variable, like autoregressive and autoregressive cross-lagged models, are examples of panel models that account for state dependence. The second explanation is that correlations over time are due to stable unobservables, like sex, place of birth, motivation, ability or personality characteristics.^[From here on out the units of interest are assumed to be individuals, but other units of observation like schools, companies, countries, etc., are possible.] In other words, stable unit-specific characteristics might predispose individuals to experiencing events with a certain likelihood over time. For example, stable characteristics like an individual's sex and motivation could be part of the reason why some individuals tend to be continuously employed, while others experience spells of unemployment, or are habitually unemployed. This second source of empirical regularity is referred to as individual heterogeneity or, more generally, unobserved heterogeneity [@Wooldridge2012]. So-called 'static' panel models (that do not include the lagged dependent variable in the equation for the current one) focus on this second source of empirical regularity. 
+
+The random and fixed effects models that will be discussed here are examples of models that attempt to account for unobserved heterogeneity as a source of empirical regularity. In the case of both the random and fixed effects models, it is assumed that there exist stable individual characteristics that affect the dependent variable of interest over time. Failure to account for this source of stable variance will reduce model fit. If any of the stable characteristics are related to the model covariates (a plausible scenario in many cases where the independent variable(s) of interest are not fixed), then they must also be considered confounders, and failure to account for them will further lead to biased point estimates.^[Whether or not the stable individual characteristics are related to the model covariates is the modern differentiator between random effects, where the individual effects are assumed independent of the covariates, and fixed effects, where the individual effects are assumed to be related to one or more of them, see @Wooldridge2012, p. 251. This can be a cause for confusion for those who are more familiar with the mixed or multilevel model framework. There, 'fixed' effects are those coefficients that apply to the entire sample, 'random' effects are the variance components for the higher level grouping variables, see for example @Hox2010; @Bates2015; @R-lme4.] 
+
+In this section, the basic random and fixed effects models, as well as their implementation in SEM, will be discussed. Later on in the article, it will be discussed how to extend the model, by relaxing some assumptions and introducing other time-invariant predictors in a type of 'hybrid' random and fixed effects model. The outlook will describe further extensions, such as the inclusion of lagged dependent variable for a dynamic panel model with individual effects.    
+Let us begin with a simple linear 'unobserved effects model' [@Wooldridge2012; @R-plm_a]
+\begin{align}
+y_{it} & = \beta_{0} + \beta_{1} x_{it} + \alpha_{i} + \varepsilon_{it}, \ i = 1, \ldots, N, \ t = 1, \ldots, T \label{eq:panel-model}
+\end{align}
+where $y_{it}$ is the dependent variable for unit $i$ at time $t$ and $x_{it}$ is a single covariate with associated scalar coefficient $\beta_{1}$. $\alpha_{i}$ represents the combined effect of all unobserved time-constant variables affecting the dependent variable and $\varepsilon_{it}$ is the idiosyncratic error. This model could of course be extended by turning $x_{it}$ into a vector of covariates $\bm{x}_{it} = (x_{1_{it}}, x_{2_{it}}, \ldots, x_{k_{it}})$, or by introducing time-invariant covariates, $\bm{z}_{i} = (z_{1_{i}}, z_{2_{i}}, \ldots, z_{m_{i}})$, but we want to first focus on assumptions and mechanics before moving on to discussing possibilities for extending the model. 
+
+Equation \eqref{eq:panel-model} is often written in matrix form for unit $i$ as 
+\begin{align}
+\bm{y}_{i} & = \bm{\iota}_{T}\beta_{0} + \bm{x}_{i}\beta_{1} + \bm{\iota}_{T} \alpha_{i} + \bm{\varepsilon}_{i}, \ i = 1, \ldots, N \label{eq:matrix-panel-model}
+\end{align}
+where $\bm{y}_{i} = (y_{i1}, y_{i2}, \ldots, y_{iT})^{\intercal}$ and $\bm{x}_{i} = (x_{i1}, x_{i2}, \ldots, x_{iT})^{\intercal}$ are $T \times 1$ vectors of each of the $t$ observations for unit $i$, $\bm{\iota}_{T}$ is a $T \times 1$ vector of ones and $\bm{\varepsilon}_{i}  = (\varepsilon_{i1}, \varepsilon_{i2}, \ldots, \varepsilon_{iT})^{\intercal}$ is likewise a $T \times 1$ vector of errors. It may be helpful to keep this Equation \eqref{eq:matrix-panel-model} in mind later when we restate the model for estimation using SEM. There, we will take the long-format data and transform it into wide-format. 
+
+## Assumptions in least squares-based approaches
+
+One of the main strengths of SEM is the flexibility it affords. Nearly every part of the model is specified 'by hand', so to speak (although modern SEM software has come a long way from, say, `EQS` [@Bentler2006], where the errors and disturbances had to be mentioned in the syntax and now comes with a variety of default settings for ease of use), which means model assumptions are conveyed directly, by the user specifying paths and correlations and setting other relations to zero. Common least squares-based statistical packages [like the `plm` package in `R`, @R-plm_a] require less input from the user (usually it is enough to input the model variables and specify some top-level options). The assumptions in the least squares-based models are widely known [@Wooldridge2012; @Bruederl2015; @Greene2012; @Angrist2009] but do not come into play prominently while specifying the model. So here we will discuss the 'typical' assumptions associated with least squares-based random and fixed effects models. Later, when we examine the implementation in SEM, we will then be able to relate back to this discussion.^[What constitutes a 'typical' least squares-based approach to these panel regression models is likely debatable. Here, this refers broadly to the assumptions discussed in the literature and default settings one encounters in statistical packages intended for this purpose.] 
+
+We want to relate the SEM-based approach to random and fixed effects to the least squares-based approach which is likely more widely known and more straightforward to implement, i.e., statistical packages for static panel regression models exist (e.g., the `plm` package in `R`, see @R-plm_a), and typically only require the user to enter the model variables and specify some top-level options (random effects vs. fixed effects, individual vs. individual and time effects, etc.). The model assumptions for random and fixed effects models are widely known [@Wooldridge2012; @Bruederl2015; @Greene2012; @Angrist2009] but are not prominent in th 
+
+The least squares-based approach to such a panel model typically makes the following base assumptions:^[What constitutes a 'typical' least squares-based approach to these panel regression models is likely debatable. Here, this refers broadly to the default assumptions and settings one encounters in statistical packages intended for this purpose, like the `plm` package in `R`, see @R-plm_a.] first, the mean function is linear, i.e., $\E(y_{it} | x_{it}, \alpha_{i}) = \beta_{0} + \beta_{1} x_{it} + \alpha_{i}$, and second, that the cross-sectional observations are independent, which is assured by random sampling [@Wooldridge2012]. Further, and just as with any other regression model, the idiosyncratic error is assumed to be mean independent of the model covariates and the individual effects, i.e., $\E(\varepsilon_{it} | x_{it}, \alpha_{i}) = \E(\varepsilon_{it}) = 0$.^[If there is an overall intercept, $\beta_{0}$, then it is safe to assume the unconditional expectation of the idiosyncratic error is zero, i.e., $\E(\varepsilon_{it}) = 0$.] The mean independence assumption also implies the assumption of a zero correlation between the idiosyncratic error and the model covariates, i.e., $\E(x_{it}\varepsilon_{it}) = 0$. 
+
+The (modern) difference between random and fixed effects boils down to the assumption of the relatedness of the model covariates and the individual effects. The random effects model assumes the model covariates are unrelated to the individual effects, i.e., in this case $\E(\alpha_{i} | x_{it}) = \E(\alpha_{i})$ and thus $\E(\alpha_{i}x_{it}) = 0$. As such, we could put $\alpha_{i}$ into the error term to form the composite error, $\nu_{it} = \alpha_{i} + \varepsilon_{it}$, and the point estimates of the coefficients of interest, here $\beta_{1}$, would be consistent (assuming the model is otherwise correctly specified). The problem with putting the individual effects into the error term is that it would induce dependency between the compostie errors within the same individual, which goes against the independence assumption [@Wooldridge2012; @Schmidheiny2019]. We will discuss that in more detail below. In the fixed effects model, one or more of the model covariates are assumed to be related to the individual effects, here $\E(\alpha_{i} | x_{it}) \ne \E(\alpha_{i})$ and thus $\E(\alpha_{i}x_{it}) \ne 0$. Thus, ignoring the individual heterogeneity and putting $\alpha_{i}$ into the error term would mean that point estimates of the coefficients of interest would be inconsistent. 
+
+The traditional least squares-based approaches to random and fixed effects often assume as well that the errors are homoskedastictic over time, i.e., $\E(\varepsilon_{it}^{2}) = \sigma_{\varepsilon_{t}}^{2} = \sigma_{\varepsilon}^{2}$. The individual effects are assumed to have a constant partial effect on the dependent variable over time [@Wooldridge2012, p. 248]. Also, typically least squares-based approaches stack each of the $N$ repeated measures per individual $i$ and calculate one single coefficient per variable for the entire sample. I.e., it is generally not intended that the estimated coefficient should vary across $t$ or $i$. 
+
+# Random and fixed effects in SEM
+
+For panel regression in SEM, we typically convert any stacked, long-format vectors of observations of length $NT$ into $T$ separate vectors of length $N$. In doing so, we get $T$ individual equations for each time point
+\begin{align}
+\bm{y}_{t} & = \bm{\iota}_{N}\beta_{0_{t}} + \bm{x}_{t}\beta_{1_{t}} + \bm{\alpha} + \bm{\varepsilon}_{t}, \ t = 1, \ldots, T \\
+\begin{bmatrix}
+y_{1_{t}} \\
+y_{2_{t}} \\
+\vdots \\
+y_{N_{t}}
+\end{bmatrix} & = 
+\begin{bmatrix}
+1 \\
+1 \\ 
+\vdots \\
+1
+\end{bmatrix} \beta_{0_{t}} + 
+\begin{bmatrix}
+x_{1_{t}} \\
+x_{2_{t}} \\
+\vdots \\
+x_{N_{t}}
+\end{bmatrix} \beta_{1_{t}} + 
+\begin{bmatrix}
+\alpha_{1} \\
+\alpha_{2} \\
+\vdots \\
+\alpha_{N}
+\end{bmatrix} + 
+\begin{bmatrix}
+\varepsilon_{1_{t}} \\
+\varepsilon_{2_{t}} \\
+\vdots \\
+\varepsilon_{N_{t}}
+\end{bmatrix}
+\end{align}
+
+Let us discuss the random and fixed effects models in SEM by examining a path diagram. Figure \ref{fig:panel-sem} shows a four-wave panel model with individual effects. As usual, rectangles indicate observed variables and circles indicate latent variables. One-sided errors indicate effects and two-headed errors indicate correlations or covariances. 
+
+
+
+
+We assume all of the observed variables are grand mean centered, so that we can drop the overall intercept from the model. 
+
+\begin{figure}
+\begin{center}
+\resizebox{0.75\textwidth}{!}{%
+\begin{tikzpicture}
+% Node styles ---
+\tikzstyle{man} = [rectangle, thick, minimum size = 0.5cm, draw = black!100, fill = white!100, font = \sffamily] 
+\tikzstyle{lat} = [circle, thick, minimum size = 0.5cm, draw = black!100, fill = white!100, font = \sffamily] 
+\tikzstyle{err} = [rectangle, minimum size = 0.5cm, draw = white!100, fill = white!100, font = \sffamily] 
+\tikzstyle{pha} = [rectangle, minimum size = 0.001cm, draw = white, fill = white]
+\tikzstyle{con} = [-latex, draw = black!100, font = \sffamily] 
+\tikzstyle{seqex} = [latex-latex, draw = black!100, font = \sffamily, dashed]
+\tikzstyle{cons} = [-latex, draw = black!100, font = \sffamily\small] 
+\tikzstyle{cor} = [latex-latex, font = \sffamily] 
+% Begin Figure ---
+% Nodes 
+\node at (+0.0,+0.0) [man] (x1) {$x_{1}$};
+\node at (+2.0,+0.0) [man] (x2) {$x_{2}$};
+\node at (+6.0,+0.0) [man] (x3) {$x_{3}$};
+\node at (+8.0,+0.0) [man] (x4) {$x_{4}$};
+\node at (+4.0,+0.0) [lat] (alp) {$\alpha$};
+\node at (+0.0,+2.1) [man] (y1) {$y_{1}$};
+\node at (+2.0,+2.1) [man] (y2) {$y_{2}$};
+\node at (+6.0,+2.1) [man] (y3) {$y_{3}$};
+\node at (+8.0,+2.1) [man] (y4) {$y_{4}$};
+\node at (+0.0,+3.0) [err] (e1) {\footnotesize $\varepsilon_{1}$};
+\node at (+2.0,+3.0) [err] (e2) {\footnotesize $\varepsilon_{2}$};
+\node at (+6.0,+3.0) [err] (e3) {\footnotesize $\varepsilon_{3}$};
+\node at (+8.0,+3.0) [err] (e4) {\footnotesize $\varepsilon_{4}$};
+% Paths
+\path (alp) edge [con] node [near start, fill=white] {1} (y1);
+\path (alp) edge [con] node [midway, fill=white] {1} (y2);
+\path (alp) edge [con] node [midway, fill=white] {1} (y3);
+\path (alp) edge [con] node [near start, fill=white] {1} (y4);
+\path (x1) edge [con] node [near start, fill=white] {$\beta$} (y1);
+\path (x2) edge [con] node [near start, fill=white] {$\beta$} (y2);
+\path (x3) edge [con] node [near start, fill=white] {$\beta$} (y3);
+\path (x4) edge [con] node [near start, fill=white] {$\beta$} (y4);
+\path (e1) edge [con] node {} (y1);
+\path (e2) edge [con] node {} (y2);
+\path (e3) edge [con] node {} (y3);
+\path (e4) edge [con] node {} (y4);
+% correlations
+\path (x1) edge [cor, bend right] node {} (x2);
+\path (x1) edge [seqex, bend right] node {} (alp);
+\path (x1) edge [cor, bend right] node {} (x3);
+\path (x1) edge [cor, bend right] node {} (x4);
+\path (x2) edge [seqex, bend right] node {} (alp);
+\path (x2) edge [cor, bend right] node {} (x3);
+\path (x2) edge [cor, bend right] node {} (x4);
+\path (x3) edge [seqex, bend left] node {} (alp);
+\path (x4) edge [seqex, bend left] node {} (alp); 
+\end{tikzpicture}
+}
+\caption{Four-wave static panel model\label{fig:panel-sem}}
+\end{center}
+\end{figure}
+
+To begin, let us review a general panel model [@Bollen2010], also referred to as the 'unobserved effects model' [@Wooldridge2012; @R-plm_a] (we will return to this model in the [online supplementary materials](https://github.com/henrik-andersen/FE-SEM/blob/master/extensions.pdf) when we discuss loosening assumptions)
+\begin{align}
+y_{it} & = \bm{x}_{it}\bm{\beta} + \bm{z}_{i}\bm{\gamma} + \alpha_{i} + \varepsilon_{it} \label{eq:gpm}
+\end{align}
+where $y_{it}$ is the dependent variable for unit $i, \ i = 1, ..., N$ at time $t, \ t = 1, ..., T$, $\bm{x}_{it}$ is a $1 \times K$ vector of time-varying covariates (which could include a constant) linked to the dependent variable by the $K \times 1$ vector of coefficients $\bm{\beta}$. $\bm{z}_{i}$ is a $1 \times M$ vector of time-invariant covariates linked to the dependent variable by the $M \times 1$ vector of coefficients in $\bm{\gamma}$, $\alpha_{i}$ represents the combined effect of all unobserved time-constant variables affecting the dependent variable and $\varepsilon_{it}$ is the idiosyncratic error.
+
+We can make stating some of the model assumptions easier by rewriting it in matrix notation
+\begin{align}
+\bm{y}_{i} & = \bm{X}_{i}\bm{\beta} + \bm{Z}_{i}\bm{\gamma} + \bm{\iota}_{T}\alpha_{i} + \bm{\varepsilon}_{i}
+\end{align}
+where $\bm{y}_{i}$ and $\bm{\varepsilon}_{i}$ are $T \times 1$ vectors, $\bm{X}_{i}$ and $\bm{Z}_{i}$ are $T \times K$ and $T \times M$ matrices, respectively, $\bm{\iota}_{T}$ is a $T \times 1$ vector of ones and $\alpha_{i}$ is a scalar. $\bm{\beta}$ and $\bm{\gamma}$ are unchanged from Equation \eqref{eq:gpm}. 
+
+Consistency of the following models requires the assumption of strict exogeneity, although what constitutes strict exogeneity differs between the random and fixed effects setups. Each assumption will be discussed shortly. Apart from that, we typically make the following assumptions about this model [see, e.g., @Wooldridge2002; @Schmidheiny2019]:
+
+- Linearity: the model is linear in its parameters. 
+- Independence: the observations are independent across individuals (assured by random sampling in the cross-section), but not necessarily across time. 
+- The usual rank condition: we have more observations than independent variables and there is no perfect collinearity between any of the independent variables. 
+
+## Random effects {#re}
+
+For the random effects (RE) model, we define a composite error term: $\nu_{it} = \alpha_{i} + \varepsilon_{it}$ and rewrite the model in Equation \eqref{eq:gpm} as 
+\begin{align}
+y_{it} & = \bm{x}_{it}\bm{\beta} + \bm{z}_{i}\bm{\gamma} + \nu_{it}, \ \text{or} \\
+\bm{y}_{i} & = \bm{X}_{i}\bm{\beta} + \bm{Z}_{i}\bm{\gamma} + \bm{\nu}_{i},
+\end{align}
+where $\bm{\nu}_{i} = \alpha_{i} \bm{\iota}_{T} + \bm{\varepsilon}_{i}$ and $\bm{\iota}_{T}$ is a $T \times 1$ vector of ones. The strict exogeneity assumption in the RE model implies
+\begin{align}
+\E[\varepsilon_{it} | \bm{X}_{i}, \bm{z}_{i}, \alpha_{i}] & = 0, \\
+\E[\alpha_{i} |\bm{X}_{i}, \bm{z}_{i}] = \E[\alpha_{i}] & = 0,
+\end{align}
+where $\bm{X}_{i} = \bm{x}_{i1}, ..., \bm{x}_{iT}$. For both parts, the assumption that the unconditional expectations are 0 is unproblematic as long as a constant is included in the regression. The first part says the idiosyncratic errors at each timepoint are assumed to be independent of the explanatory variables at \textit{all} timepoints which is stronger than just assuming that they are \textit{contemporaneously} independent. This implies that they are also uncorrelated, i.e., $\E[\bm{x}_{is}^{\intercal}\varepsilon_{it}] = \bm{0}$ and $\E[\bm{z}_{i}^{\intercal}\varepsilon_{it}] = \bm{0}, \ \forall \ s, t = 1, ..., T$ [@Wooldridge2002; @Bruederl2015]. We assume the idiosyncratic errors are further independent of the individual effects, which implies $\E[\alpha_{i}\varepsilon_{it}] = 0$. 
+
+The second part is the potentially controversial assumption: it states that the individual effects are uncorrelated with the independent variables. We can use an intuitive concrete example to show why this is often controversial: If we are interested in the question of whether married men earn more than unmarried men, then the second part of the strict exogeneity assumption means that a man's marriage status would have to be uncorrelated with all the time-invariant characteristics that could potentially make that man an attractive marriage candidate in the first place; e.g., looks, personality, family's status, profession, etc. [@Bruederl2015].^[Assuming, for the sake of argument, that these characteristics are constant over time.] 
+
+From what we have discussed so far, the $T \times T$ covariance matrix of the errors $\bm{\Omega}_{i} = \E[\bm{\nu}_{i}\bm{\nu}_{i}^{\intercal}]$ can be constructed. However, the standard random effects model adds the additional assumptions 
+\begin{alignat}{3}
+\E[\varepsilon_{it}^{2} | \bm{X}_{i}, \bm{z}_{i}, \alpha_{i}] & = \E[\varepsilon_{it}^{2}] && = \sigma_{\varepsilon}^{2}, && \ t = 1, ..., T, \\
+\E[\varepsilon_{it}\varepsilon_{is}| \bm{X}_{i}, \bm{z}_{i}, \alpha_{i}] & = \E[\varepsilon_{it}\varepsilon_{is}] && = 0, && \ \forall \ t \ne s 
+\end{alignat}
+i.e., the idiosyncratic errors are conditionally homoscedastic and serially uncorrelated and 
+\begin{alignat}{2}
+\E[\alpha_{i}^{2}| \bm{X}_{i},\bm{z}_{i}] & = \E[\alpha_{i}^{2}] && = \sigma^{2}_{\alpha}
+\end{alignat}
+i.e., the individual effects are conditionally homoscedastic (they are necessarily serially correlated as long as $\sigma_{\alpha}^{2} > 0$). From that, we arrive at the typical random effects structure of the $NT \times NT$ matrix $\bm{\Omega}$: 
+
+\begin{align}
+\bm{\Omega} & = 
+\begin{pmatrix}
+\bm{\Omega}_{1} & \hdots & 0 & \hdots & 0 \\
+\vdots & \ddots & \vdots & \ddots & \vdots \\
+0 & \hdots & \bm{\Omega}_{i} & \hdots & 0 \\
+\vdots & \ddots & \vdots & \ddots & \vdots \\
+0 & \hdots & 0 & \hdots & \bm{\Omega}_{N}
+\end{pmatrix}
+\end{align}
+with $T \times T$ typical elements 
+\begin{align}
+\bm{\Omega}_{i} & = 
+\begin{pmatrix}
+\sigma^{2}_{\nu} & \sigma^{2}_{\alpha} & \hdots & \sigma^{2}_{\alpha} \\
+\sigma^{2}_{\alpha} & \sigma^{2}_{\nu} & \hdots & \sigma^{2}_{\alpha} \\
+\vdots & \vdots & \ddots & \vdots \\
+\sigma^{2}_{\alpha} & \sigma^{2}_{\alpha} & \hdots & \sigma^{2}_{\nu}
+\end{pmatrix} \label{eq:omeganui}
+\end{align}
+where $\sigma^{2}_{\nu} = \sigma^{2}_{\alpha} + \sigma^{2}_{\varepsilon}$ [@Wooldridge2002; @Schmidheiny2019]. This means that in the conditional covariance matrix of the errors, given the time-varying and -invariant covariates, units over time will be correlated due to the individual effects. We should keep the covariance structure of the errors in mind as it will help make sense of the use of latent variables to decompose the dependent variable into between- and within-variance components, discussed below in Section \ref{fe-sem}. 
+
+Estimation of the RE model can be done using feasible generalized least squares (GLS) in which the two unknowns in $\bm{\Omega}$, $\sigma_{\alpha}^{2}$ and $\sigma_{\nu}^{2}$, are first estimated using pooled ordinary least squares (pooled OLS or POLS), where^[Normally a degrees-of-freedom correction is applied by subtracting off the number of independent variables that is negligible in large N samples. It is ignored here for the sake of simplicity.]
+\begin{align}
+\hat{\sigma}_{\nu}^{2} & = \frac{1}{NT}\sum_{i = 1}^{N}\sum_{t = 1}^{T}\hat{\nu}_{it}^{2}, \\
+\hat{\sigma}_{\varepsilon}^{2} & = \frac{1}{NT - N}\sum_{i = 1}^{N}\sum_{t = 1}^{T}(\hat{\nu}_{it} - \bar{\hat{\nu}}_{i})^{2}
+\end{align}
+and $\hat{\nu}_{it} = y_{it} - \bm{x}_{it}\hat{\bm{\beta}}_{\tiny{POLS}} - \bm{z}_{i}\hat{\bm{\gamma}}_{\tiny{POLS}}$, $\bar{\hat{\nu}}_{i} = T^{-1}\sum_{t = 1}^{T}\hat{\nu}_{it}$ and $\hat{\sigma}^{2}_{\alpha} = \hat{\sigma}^{2}_{\nu} - \hat{\sigma}^{2}_{\varepsilon}$. Here, $\bm{\hat{\beta}}_{\tiny{POLS}}$ and $\hat{\bm{\gamma}}_{\tiny{POLS}}$ are the POLS estimates for the coefficients of the time-varying and -invariant covariates, respectively. Then, the coefficients are estimated using those estimates in the variance matrix $\hat{\bm{\Omega}}$:
+\begin{align}
+\begin{pmatrix}
+\hat{\bm{\beta}}_{RE} \\
+\hat{\bm{\gamma}}_{RE}
+\end{pmatrix} & = 
+(\bm{W}^{\intercal}\hat{\bm{\Omega}}^{-1}\bm{W})^{-1}\bm{W}^{\intercal}\hat{\bm{\Omega}}^{-1}\bm{y}
+\end{align}
+where $\bm{W} = \begin{pmatrix}\bm{X} & \bm{Z}\end{pmatrix}$ and $\bm{X}$ is $NT \times K$ and $\bm{Z}$ is $NT \times M$ and $\bm{y}$ is $NT \times 1$. 
+
+In practice, however, computational problems can arise with large cross-sectional samples, where it can become difficult to invert the $\hat{\bm{\Omega}}$ matrix. One solution is to use 'partial-demeaning' to transform the data before performing simple POLS:
+\begin{align}
+(y_{it} - \theta\bar{y}_{i}) & = (\bm{x}_{it} - \theta\bar{\bm{x}}_{i})\bm{\beta} + (\bm{z}_{i} - \theta \bar{\bm{z}}_{i})\bm{\gamma} + (\varepsilon_{it} - \theta \bar{\varepsilon}_{i}) \label{eq:partialdemean}
+\end{align} 
+where $\theta = 1 - [\sigma_{\alpha}^{2}/(\sigma_{\alpha}^{2} + T \sigma_{\varepsilon}^{2})]^{1/2}$, and $\bar{y}_{i} = T^{-1}\sum_{t = 1}^{T}y_{it}$, $\bar{\bm{x}}_{i} = T^{-1}\sum_{t = 1}^{T}\bm{x}_{it}$, $\bar{\bm{z}}_{i} = T^{-1}\sum_{t = 1}^{T}\bm{z}_{i}$ and $\bar{\varepsilon}_{i} = T^{-1}\sum_{t = 1}^{T}\varepsilon_{it}$ [@R-plm_a]. 
+
+The RE model can also be estimated in the maximum likelihood framework, where in the associated literature on panel models are generally referred to as either mixed models, hierarchical models or longitudinal models. The typical RE model discussed here is the equivalent to a mixed model with random intercepts and fixed slopes [@R-plm_a]. Under the assumption of normality, along with homoscedasticity and serially uncorrelated errors, the maximum likelihood estimator is the same as the OLS estimator. For more on the topic of mixed models, see for example @R-lme4, @Bates2010.
+
+## Fixed effects {#fe}
+
+For fixed effects, we assume that the individual effects are \textit{not independent} of the model covariates, i.e., $\E[\alpha_{i}|\bm{X}_{i},\bm{z}_{i}] \ne \E[\alpha_{i}] \ne 0$. Under this assumption, grouping the individual effects in with the composite error will cause the coefficients of interest, here specifically $\bm{\beta}$ to be inconsistent [@Wooldridge2002; @Wooldridge2012]. We write the model therefore again in terms of the general panel model in Equation \eqref{eq:gpm} with separate individual effects and idiosyncratic error terms. In order to drop assumptions involving the individual effects, a number of methods are available (e.g., differencing, least squares dummy variable regression), but the most common approach is to \textit{demean} the equation [@Bruederl2015]. Demeaning is the same as the transformation applied in Equation \eqref{eq:partialdemean} in the special case where $\theta = 1$. I.e., demeaning involves subtracting the per-unit, over-time average from each of the model terms, i.e.,
+\begin{align}
+(y_{it} - \bar{y}_{i}) & = (\bm{x}_{it} - \bar{\bm{x}}_{i})\bm{\beta} + (\bm{z}_{i} - \bar{\bm{z}}_{i})\bm{\gamma} + (\alpha_{i} - \bar{\alpha}_{i}) + (\varepsilon_{it} - \bar{\varepsilon}_{i}) \\
+\ddot{y}_{it} & = \bm{\ddot{x}}_{it}\bm{\beta} + \ddot{\varepsilon}_{it}, \ \text{or} \\
+\bm{\ddot{y}}_{i} & = \bm{\ddot{X}}_{i}\bm{\beta} + \bm{\ddot{\varepsilon}}_{i} \label{eq:fe}
+\end{align}
+where the over-time averages are calculated the same as above, and the variables with the dots above them represent the demeaned versions. 
+Because the average of something that does not change is that thing itself, the individual effects, along with any time-invariant predictors, get wiped out by the demeaning. This means that no assumptions about the relatedness of the model covariates and the unit-specific portion of the error are needed. Consistency of the estimates is related solely to the strict exogeneity assumption imposed on the idiosyncratic errors, i.e., $\E[\ddot{\varepsilon}_{it}|\bm{\ddot{x}}_{it}] = \E[\ddot{\varepsilon}_{it}] = 0$ which also implies $\E[\bm{\ddot{x}}_{is}^{\intercal}\ddot{\varepsilon}_{it}] = \bm{0}, \ \forall \ s, t = 1, ..., T$ [@Bruederl2015; @Wooldridge2002]. 
+
+Having demeaned the data, the typical FE estimator is POLS on the transformed data
+\begin{align}
+\bm{\beta}_{FE} & = (\ddot{\bm{X}}^{\intercal}\ddot{\bm{X}})^{-1}\ddot{\bm{X}}^{\intercal}\ddot{\bm{y}}
+\end{align}
+[@Bruederl2015]. The downside to this approach is that no time-invariant predictors can be included in the model. However, there are alternative approaches in the random effects and mixed model frameworks that allow them to be included. These models are sometimes referred to as 'within-between' or 'hybrid' models, often based on the Chamberlain -@Chamberlain1980 and Mundlak -@Mundlak1978 approaches, see for example @Bell2018; @Allison2011; @Schunck2013; @Enders2007. In the [online appendix](https://github.com/henrik-andersen/FE-SEM/blob/master/extensions.pdf), it will be discussed how to also get around this restriction using SEM. 
+
+# Fixed effects in structural equation modeling {#fe-sem}
+
+Moving from the conventional methods outlined above to SEM, we must state the FE model in a different way. We turn to latent variables to account for time-invariant unobserved heterogeneity. In fact, besides accounting for measurement error and the representation of abstract hypothetical concepts, unobserved heterogeneity has historically been one of the main uses of latent variables in SEM [@Skrondal2004]. 
+
+## Modeling time-invariant unobserved heterogeneity as a latent variable
+
+We first need to convert the data from stacked, long-format vectors of length $NT$ into $T$ individual vectors of length $N$. To see why this is necessary, consider what effect this has on the vector of responses $y_{it}$. Let us, for a minute ignore any covariates and focus just on the dependent variable (a so-called 'intercept-only' or 'null' model) so that we have $y_{it} = \alpha_{i} + \varepsilon_{it}$. When we convert the data to wide-format, we get $T$ individual equations,
+\begin{align}
+\bm{y}_{t} & = \bm{\alpha} + \bm{\varepsilon}_{t} \\
+\begin{bmatrix}
+y_{1t} \\
+y_{2t} \\
+\vdots \\
+y_{Nt}\end{bmatrix} & = 
+\begin{bmatrix}
+\alpha_{1} \\
+\alpha_{2} \\
+\vdots \\
+\alpha_{N}
+\end{bmatrix} + 
+\begin{bmatrix}
+\varepsilon_{1t} \\
+\varepsilon_{2t} \\
+\vdots \\
+\varepsilon_{Nt}
+\end{bmatrix} \label{eq:wide}
+\end{align}
+for each $t = 1, 2, ..., T$. Because the idiosyncratic errors are assumed to be uncorrelated across units and across time, the covariance between any two of the new wide vectors $\Cov(y_{ti},y_{si}) = \Var(\alpha_{i}), \ t \ne s$. Otherwise, when $t = s$, the covariance $\Cov(y_{ti},y_{ti}) = \Var(\alpha_{i}) + \Var(\varepsilon_{ti})$. This is the structure we saw above in a typical element of $\bm{\Omega}$. 
+
+And in fact this is exactly how a latent variable is used to account for time-invariant unobserved heterogeneity. The dependent variable at each timepoint is regressed onto the latent variable, see Figure \ref{fig:fesem}. Here, the regression weights or 'factor loadings' are fixed to one to represent our assumption that the effect of the time-invariant unobserved heterogeneity is constant over time.^[In fact, the initial FE-SEM setup shown in the main article mimics the POLS methods described above in that it assumes constant effects and error variances over time. These assumptions can be loosened and tested, as will be shown in the [supplementary materials](https://github.com/henrik-andersen/FE-SEM/blob/master/extensions.pdf). For now, for the sake of simplicity and comparability, we retain the assumptions associated with the 'pooled' models for the most part.] It also means that the estimated variance of the latent variable is equal to the \textit{average covariance between the wide-format columns of the dependent variable over time}. If $y_{it} = \alpha_{i} + \varepsilon_{it}$ is the true data generating process, then the relationship between two units over time is just $\Var(\alpha)$, regardless of the time distance. Referring back to the random effects structure of $\bm{\Omega}_{i}$ in Equality \eqref{eq:omeganui} for a generic unit $i$, we see the covariance on all of the off-diagonals is $\sigma^{2}_{\alpha}$. And, as we know, the average of something that does not change is that thing itself. 
+
+To elaborate on this concept some more, consider the following matrix equation of the variances and the nonredundant covariances in a three-wave intercept-only model that follows directly from Equation \eqref{eq:wide} (assuming $\Cov(\varepsilon_{ti},\varepsilon_{si}) = 0, \ t \ne s$), and which we can solve easily with least squares:
+\begin{align}
+\bm{A}\bm{x} & = \bm{b} \\
+\begin{pmatrix}
+1 & 1 & 0 & 0 \\
+1 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 \\
+1 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1
+\end{pmatrix}
+\begin{pmatrix}
+\psi \\
+\phi_{1} \\
+\phi_{2} \\
+\phi_{3}
+\end{pmatrix} & = 
+\begin{pmatrix}
+\Var(y_{1}) \\
+\Cov(y_{2},y_{1}) \\
+\Cov(y_{3},y_{1}) \\
+\Var(y_{2}) \\
+\Cov(y_{3},y_{2}) \\
+\Var(y_{3})
+\end{pmatrix}
+\end{align}
+where $\psi = \Var(\alpha)$, $\phi_{t} = \Var(\varepsilon_{t})$. We can solve this equation to show
+\begin{align}
+\bm{A}\bm{x} & = \bm{b} \\
+(\bm{A}^{\intercal}\bm{A})^{-1}\bm{A}^{\intercal}\bm{A}\bm{x} & = (\bm{A}^{\intercal}\bm{A})^{-1}\bm{A}^{\intercal}\bm{b} \\
+\hat{\bm{x}} & = (\bm{A}^{\intercal}\bm{A})^{-1}\bm{A}^{\intercal}\bm{b} \\
+\begin{pmatrix}
+\hat{\psi} \\
+\hat{\phi}_{1} \\
+\hat{\phi}_{2} \\
+\hat{\phi}_{3}
+\end{pmatrix} & = 
+\begin{pmatrix}
+\frac{1}{3}\Cov(y_{2},y_{1}) + \frac{1}{3}\Cov(y_{3},y_{1}) + \frac{1}{3}\Cov(y_{3},y_{2}) \\
+\Var(y_{1}) - \hat{\psi} \\
+\Var(y_{2}) - \hat{\psi} \\
+\Var(y_{3}) - \hat{\psi}
+\end{pmatrix}.
+\end{align}
+So if, in fact the covariance between any two wide-format columns of $y$ is $\Cov(y_{t},y_{s}) = \Var(\alpha), \ \forall \ s \ne t$, then $\hat{\psi} = \frac{1}{3}\Var(\alpha) + \frac{1}{3}\Var(\alpha) + \frac{1}{3}\Var(\alpha) = \frac{3 \Var(\alpha)}{3} = \Var(\alpha)$. This shows that if our assumption about the underlying data generating process (DGP) is correct, i.e., $y_{it} = \alpha_{i} + \varepsilon_{it}$ and $\Cov(\varepsilon_{t},\varepsilon_{s}) = 0, \ \forall \ t \ne s$, then the estimated variance of $\alpha$ is just what it should be: the average covariance between units of $y$ over time. Once we add in observed covariates, the estimated covariance of $\alpha$ then become the \textit{conditional} covariance of $y$ over time, given those covariates.  
+
+\begin{figure}
+\begin{center}
+\resizebox{0.75\textwidth}{!}{%
+\begin{tikzpicture}
+% Node styles ---
+\tikzstyle{man} = [rectangle, thick, minimum size = 1cm, draw = black!80, fill = white!100, font = \sffamily] % Manifest variables
+\tikzstyle{lat} = [circle, thick, minimum size = 1cm, draw = black!80, fill = white!100, font = \sffamily] % Latent variables
+\tikzstyle{err} = [circle, draw = black!80, fill = white!100, font = \sffamily] % Errors 
+% Edge styles
+\tikzstyle{con} = [-latex, font = \sffamily] % Effects
+\tikzstyle{cons} = [-latex, font = \sffamily\small] % Effects with smaller font 
+\tikzstyle{cor} = [latex-latex, font = \sffamily] % Correlations
+% Begin Figure ---
+% Nodes 
+\node at (+0.0,+0.0) [man] (x1) {$x_{1}$};
+\node at (+2.0,+0.0) [man] (x2) {$x_{2}$};
+\node at (+6.0,+0.0) [man] (x3) {$x_{3}$};
+\node at (+4.0,+0.0) [lat] (eta) {$\alpha$};
+\node at (+0.0,-2.0) [man] (y1) {$y_{1}$};
+\node at (+2.0,-2.0) [man] (y2) {$y_{2}$};
+\node at (+6.0,-2.0) [man] (y3) {$y_{3}$};
+\node at (+0.0,-3.5) [err] (e1) {$\varepsilon_{1}$};
+\node at (+2.0,-3.5) [err] (e2) {$\varepsilon_{2}$};
+\node at (+6.0,-3.5) [err] (e3) {$\varepsilon_{3}$};
+% Paths
+\path (x1) edge [con, draw = black!100, left] node {$\beta$} (y1);
+\path (x2) edge [con, draw = black!100, left, near start] node {$\beta$} (y2);
+\path (x3) edge [con, draw = black!100, right] node {$\beta$} (y3);
+\path (e1) edge [con, draw = black!100, left] node {1} (y1);
+\path (e2) edge [con, draw = black!100, left] node {1} (y2);
+\path (e3) edge [con, draw = black!100, right] node {1} (y3);
+\path (eta) edge [con, draw = black!100, above, near start] node {1} (y1);
+\path (eta) edge [con, draw = black!100, below] node {1} (y2);
+\path (eta) edge [con, draw = black!100, above] node {1} (y3);
+% correlations
+\path (x1) edge [cor, bend left] node {} (x2);
+%\path (x1) edge [cor, bend left] node {} (eta);
+\path (x1) edge [cor, bend left] node {} (x3);
+%\path (x2) edge [cor, bend left] node {} (eta);
+\path (x2) edge [cor, bend left] node {} (x3);
+%\path (x3) edge [cor, bend right] node {} (eta);
+\end{tikzpicture}
+}
+\caption{Typical three-wave RE-SEM model with contemporary effects\label{fig:resem}}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\resizebox{0.75\textwidth}{!}{%
+\begin{tikzpicture}
+% Node styles ---
+\tikzstyle{man} = [rectangle, thick, minimum size = 1cm, draw = black!80, fill = white!100, font = \sffamily] % Manifest variables
+\tikzstyle{lat} = [circle, thick, minimum size = 1cm, draw = black!80, fill = white!100, font = \sffamily] % Latent variables
+\tikzstyle{err} = [circle, draw = black!80, fill = white!100, font = \sffamily] % Errors 
+% Edge styles
+\tikzstyle{con} = [-latex, font = \sffamily] % Effects
+\tikzstyle{cons} = [-latex, font = \sffamily\small] % Effects with smaller font 
+\tikzstyle{cor} = [latex-latex, font = \sffamily] % Correlations
+% Begin Figure ---
+% Nodes 
+\node at (+0.0,+0.0) [man] (x1) {$x_{1}$};
+\node at (+2.0,+0.0) [man] (x2) {$x_{2}$};
+\node at (+6.0,+0.0) [man] (x3) {$x_{3}$};
+\node at (+4.0,+0.0) [lat] (eta) {$\alpha$};
+\node at (+0.0,-2.0) [man] (y1) {$y_{1}$};
+\node at (+2.0,-2.0) [man] (y2) {$y_{2}$};
+\node at (+6.0,-2.0) [man] (y3) {$y_{3}$};
+\node at (+0.0,-3.5) [err] (e1) {$\varepsilon_{1}$};
+\node at (+2.0,-3.5) [err] (e2) {$\varepsilon_{2}$};
+\node at (+6.0,-3.5) [err] (e3) {$\varepsilon_{3}$};
+% Paths
+\path (x1) edge [con, draw = black!100, left] node {$\beta$} (y1);
+\path (x2) edge [con, draw = black!100, left, near start] node {$\beta$} (y2);
+\path (x3) edge [con, draw = black!100, right] node {$\beta$} (y3);
+\path (e1) edge [con, draw = black!100, left] node {1} (y1);
+\path (e2) edge [con, draw = black!100, left] node {1} (y2);
+\path (e3) edge [con, draw = black!100, right] node {1} (y3);
+\path (eta) edge [con, draw = black!100, above, near start] node {1} (y1);
+\path (eta) edge [con, draw = black!100, below] node {1} (y2);
+\path (eta) edge [con, draw = black!100, above] node {1} (y3);
+% correlations
+\path (x1) edge [cor, bend left] node {} (x2);
+\path (x1) edge [cor, bend left] node {} (eta);
+\path (x1) edge [cor, bend left] node {} (x3);
+\path (x2) edge [cor, bend left] node {} (eta);
+\path (x2) edge [cor, bend left] node {} (x3);
+\path (x3) edge [cor, bend right] node {} (eta);
+\end{tikzpicture}
+}
+\caption{Typical three-wave FE-SEM model with contemporary effects\label{fig:fesem}}
+\end{center}
+\end{figure}
+
+# Random and fixed effects in lavaan {#fesem}
+
+The basic panel models discussed in this tutorial consist of three main parts. First, we want to create a latent variable representing the individual effects. Second, we regress the time-varying dependent variable on the time-varying (and time-invariant, see Section \ref{time-invariant}) covariates. Third, we specify the correlations depending on our assumptions. If we believe the individual effects are unrelated to the time-varying covariates (we must assume they are unrelated to the time-invariant ones, otherwise the model is not identified), then we apply the RE assumptions and constrain the covariances between the individual effects and the time-varying covariates to zero. If we believe the individual effects are indeed related to the model covariates (or more realistic assumption in many circumstances), then we must specify these correlations between the individual effects and the time-varying covariates. Finally, in an optional step, we can constrain the residual variances to be equal over time, if we want or need to, potentially in order to save degrees of freedom. The following section will explain these steps in `lavaan` in detail. 
+
+## The `lavaan` package in `R`
+
+The package `lavaan` needs to be installed once with `install.packages("lavaan")`. This can be entered directly into the console or at the top of the script. To be able to use the package, we need to load it for every new `R` session:
+
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+library( lavaan)
+```
+
+For users unfamiliar with `R`, SEM analyses can be carried out with almost no knowledge of the language. Typically, someone unfamiliar with `R` would prepare their data using some other statistical software, and then save the intended dataset as a `.csv`, `.xlsx`, `.dta`, `.sav`, etc. file. The user must then import the data, preferably as a dataframe, and the rest occurs using the `lavaan` syntax.^[There are many online tutorials for importing data in various formats, see, for example some from  [datacamp](https://www.datacamp.com/community/tutorials/r-data-import-tutorial) or [Quick-R](https://www.statmethods.net/input/importingdata.html), or any of the many posts on [stackoverflow](https://stackoverflow.com/search?q=r+import+data).] 
+
+To use `lavaan`, we create an `R` object using the assignment operator `<-`, see the model syntax example below. Here, the object has been called `fe_sem` because the option for the individual effects to covary with the time-varying covariates has been chosen (more on that in a moment). The object can be named anything that complies with object naming conventions in `R` (e.g., the object name must start with a letter or dot, separate using underscores or dots, etc.). The model syntax is enclosed in quotes, either single `''` or double `""`. This means that the model syntax is essentially a string that the `lavaan` package interprets in a second step. Once the model has been specified, we use the `sem()` function to 'fit' the model. Notice a second object is made out of the fitted `lavaan` object. Here the fitted `lavaan` object has been named `fe_sem.fit`. That is, we specify the SEM by writing the model syntax as a string and saving it as an object. Then, in a second step, we run the `sem()` function on that object. The `sem()` function requires at least two arguments: `model`, i.e., the model object (here: `fe_sem`), and `data`, i.e., the dataframe or covariance matrix (along with the mean vector, if desired). That is, at a bare minimum, we must tell `lavaan` how the model is specified and where the data is. There are a number of other optional arguments that can be included. If they are not, the defaults of the `sem()` wrapper are used.^[See [further details on the `sem()` wrapper defaults](https://rdrr.io/cran/lavaan/man/sem.html), or enter `lavOptions()` into the console to get a full list of defaults. An explanation of the optional arguments can be found by entering `?lavOptions` in the console. There are other 'wrappers' with slightly different default options, like `cfa()` for example, see [the `lavaan` tutorial website](https://lavaan.ugent.be/tutorial/cfa.html).] Many default options are uninteresting for the current tutorial, but it is important to note that the `sem()` wrapper allows all latent exogenous variables to covary, 
+
+For this example, even though it is the default estimator, `estimator = "ML"` has been included as an optional argument to emphasize the fact. The [online supplementary materials](https://github.com/henrik-andersen/FE-SEM/blob/master/simulation-code.R) provide some guidance on using robust estimators and full information maximum likelihood (FIML) to deal with non-normal data and missing values; both of which can be accessed with optional arguments in the `sem()` function call. 
+
+## Model syntax
+
+Again, specifying the most basic random or fixed effects model, like the one shown in @Bollen2010 (the same model as Equation \eqref{eq:fe} but with just one time-varying predictor) involves three to four components. First, we define the latent individual effects variable using the `=~` 'measured by' or 'manifested by' [@R-lavaan] operator at the same time constraining the factor loadings at each timepoint to one with `1*` (see line 3 in the model code below). I will call the latent variable `a` to stand for $\alpha$. Constraining all of the factor loadings to one reflects our implicit assumption that the combined effect of the unit-specific unobserved factors is constant over time. This is the default behaviour of traditional POLS-based approaches to RE and FE that use the stacked long-format data. 
+
+Second, we regress the dependent variable on the independent variable using the `~` regression operator (see lines 5--9). With stacked, long-format data, only one regression coefficient is estimated over all observed timepoints. To have our model mimic this behaviour, we need to constrain the the estimated coefficient to equal over time. We do so by adding the same label to the regression coefficient at every time point. We will use the label `b` (this label was chosen arbitrarily, we could have used any letter or string of characters) and have it act as an equality constraint for the regression coefficient of interest $\beta$.
+
+The key to a FE model, as opposed to an RE model are our assumptions about the relatedness of our time-varying covariates and the individual effects, i.e., $\E[x_{t}\alpha]$. For an FE model, we want to partial out any potential covariance between the independent variable and the individual effects. This accounts for any linear relationship between $x_{t}$ and the unit-specific characteristics influencing the dependent variable. Further, allowing unrestricted covariances between the independent variable itself over time will not affect how the coefficient $\beta$ is estimated, but will have an effect on the standard errors (see lines 12--17). To mimic the behaviour of a conventional FE model, we allow the independent variable to be correlated with the individual effects and itself over time. Covariances (including covariances between a variable and itself, i.e., variances) are specified using the `~~` operator. The alternative RE model is achieved by replacing line 11 with line 12, which is currently commented out. In line 12, the covariances between the individual effects and the time-varying covariate are constrained to zero; the RE assumption. This is done in the same way as fixing the factor loadings to one in line 3. Here, we fix the covariances to zero with `0*`. 
+
+The last component of our code involves the variances of the residuals (lines 19--23). This component is optional, but we can constrain the residual variances to be equal over time to again mimic the behaviour of a conventional RE/FE model using POLS on stacked data. Here, again, we use labels to make equality constraints. Because $y_{t}$ is endogenous, the `~~` operator specifies the variances of *residuals*, i.e., $\varepsilon_{t}$.   
+
+```{r echo=FALSE}
+df <- readRDS("../longData.Rda")
+dfw <- readRDS("../wideData.Rda")
+```
+
+```{r, attr.source=".numberLines"}
+fe_sem <- '
+# Define individual effects variable 
+a =~ 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5
+# Regressions, constrain coefficient to be equal over time
+y1 ~ b*x1
+y2 ~ b*x2 
+y3 ~ b*x3
+y4 ~ b*x4
+y5 ~ b*x5
+# Correlations, individual effects are related to time-varying 
+# covariates depending on RE or FE assumptions 
+a ~~ x1 + x2 + x3 + x4 + x5             # FE Model 
+# a ~~ 0*x1 + 0*x2 + 0*x3 + 0*x4 + 0*x5 # RE Model 
+x1 ~~ x2 + x3 + x4 + x5
+x2 ~~ x3 + x4 + x5
+x3 ~~ x4 + x5
+x4 ~~ x5
+# Constrain residual variances to be equal over time
+y1 ~~ e*y1
+y2 ~~ e*y2
+y3 ~~ e*y3
+y4 ~~ e*y4
+y5 ~~ e*y5
+'
+fe_sem.fit <- sem(model = fe_sem, 
+                  data = dfw, 
+                  estimator = "ML")
+```
+
+# A simulated example {#ex1}
+
+To demonstrate the application of FE models in SEM, a dataset can be simulated that embodies the FE assumptions. Again, the code for data simulation can be found in the [online supplementary materials](https://github.com/henrik-andersen/FE-SEM/blob/master/simulation-code.R). 
+
+To show that the latent individual effects variables represent the *combined* effect of all time-invariant characteristics, the dependent variable will be influenced by two separate unit-specific variables, which we can call $\alpha_{1}$ and $\alpha_{2}$. We will construct the simulated data such that the independent variable is correlated with both of the time-invariant variables. This means that approaches that fail to account for this confounding influence, such as POLS or RE, will be biased. 
+
+The wide-format equations for the data generating process can be described as:
+\begin{align}
+\bm{x_{t}} & = \bm{\alpha_{1}}\beta_{x_{t},\alpha_{1}} + \bm{\alpha_{2}}\beta_{x_{t},\alpha_{2}} + \bm{\delta_{t}}, \\
+\bm{y_{t}} & = \bm{x_{t}}\beta_{y_{t},x_{t}} + \bm{\alpha_{1}}\beta_{y_{t},\alpha_{1}} + \bm{\alpha_{2}} \beta_{y_{t},\alpha_{2}} + \bm{\varepsilon_{t}} 
+\end{align}
+where, for the sake of simplicity, $\bm{\alpha_{1}}$, $\bm{\alpha_{2}}$, $\bm{\delta_{t}}$ and $\bm{\varepsilon_{t}}$ are $\sim N(0,1)$.
+
+For the following example, a sample size of 1,000, observed over five waves, was chosen. The unique variance of $\bm{x}$, as well as both the individual-effect variables is also $\sim N(0,1)$. The coefficient of interest, $\beta_{y,x}$ is set to be equal to $0.3$. A correlation between $\bm{x}$ and the individual effects is induced through $\beta_{x,\alpha_{1}} = 0.85$ and $\beta_{x,\alpha_{1}} = 0.50$. With the variances above set to one, the covariances will be roughly $\Cov(x_{t},\alpha_{1}) = 0.85$ and $\Cov(x_{t},\alpha_{2}) = 0.5$. The dependent variable is also influenced by the individual effects variables with $\beta_{y_{t},\alpha_{1}} = 0.75$ and $\beta_{y_{t},\alpha_{2}} = 0.45$ These values were chosen arbitrarily. 
+
+```{r, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE}
+saveRDS(fe_sem, "../fe_sem.Rda")
+saveRDS(fe_sem.fit, "../fe_sem.fit.Rda")
+```
+
+We can get a summary of the model with `summary()`. The first portion of the summary output gives an overview of some basic information and fit statistics. The maximum likelihood estimator is the default, so it did not have to be explicitly selected in the fitting function call. Other estimators are available, including generalized and unweighted least squares (`GLS` and `ULS`, respectively), robust standard errors maximum likelihood (`MLM`) and several others (see [the lavaan online tutorial for more](https://lavaan.ugent.be/tutorial/est.html)).
+
+This part of the summary output also tells us that the analysis is based on 1,000 observations (missings would be shown here as well if there were any), and that the $\chi^{2}$ statistic is `r round( lavInspect( fe_sem.fit, "fit")[ "chisq"], 3)` based on `r lavInspect( fe_sem.fit, "fit")[ "df"]` degrees of freedom (55 observed covariances minus 1 error variance, 1 coefficient, 1 latent variable variance, 5 exogenous variable variances and 15 covariances for $55 - 23 = 32$ df). The p-value on the $\chi^{2}$ statistic is not significant with $p =$ `r round( lavInspect( fe_sem.fit, "fit")[ "pvalue"], 3)` which tells us the differences between the model-implied and observed covariance matrices are likely due to chance, and that the model fits the data well (given how the data was generated, it would be surprising if this were not the case). Other fit measures including typical comparative fit indices can be requested by either adding `fit.measures = TRUE` as a secondary argument to the `summary()` call, or by asking for a complete list of all available fit statistics using `lavInspect(model, "fit")` where `model` stands for the name of the fitted model, in this case `fe_sem.fit`. 
+
+```{r restate model, output.lines=1:20}
+summary(fe_sem.fit)
+```
+
+Next the summary output shows the measurement models for the latent variables, if any. In this case the latent variable `a` for $\alpha$ is measured by each of the five observed dependent variables with factor loadings fixed to 1.0. 
+
+```{r measurement, echo=FALSE, output.lines=22:29}
+summary(fe_sem.fit)
+```
+
+The regressions are shown next. Here, because we have constrained the regression coefficients to be equal over time (the equality constraint label `(b)` is listed to the left of the estimates), the estimate of $\beta =$ `r round( lavInspect( fe_sem.fit, "list")[6, 14], 3)` (`r round( lavInspect( fe_sem.fit, "list")[6, 15], 3)`) is repeated five times. The corresponding z- and p-values show that the coefficient is, unsurprisingly, significant. 
+
+```{r regression, echo=FALSE, output.lines=31:42}
+summary(fe_sem.fit)
+```
+
+Next, the covariance estimates are listed. First, the covariances between the latent individual effects variable and the independent variable over time are shown, and then the covariances between the independent variable with itself over time.
+
+One should always take care to double-check that there are no unintended covariances listed here. Like `Mplus`, the `lavaan` package estimates some covariances per default, without the user explicitly having to add them to the model syntax. For example, covariances between latent variables are estimated per default. If one does not wish for them to covary, it must be explicitly stated, e.g., with `f1 ~~ 0*f2`, assuming the latent variables are called `f1` and `f2`, or by overriding the default behaviour for the entire model by adding `orthogonal = TRUE` (which sets the correlation between all latent variables to zero) to the fitting call.^[This is at least the current behaviour of both the `cfa` and `sem` wrappers. In fact, both wrappers seem to be identical in terms of the default settings, see @Rosseel2020.] 
+
+```{r covariance, echo=FALSE, output.lines=44:65}
+summary(fe_sem.fit)
+```
+
+Finally, the variance estimates are listed. Here, we see that in order to mimic the behaviour of a traditional FE model, the error variances over time were specified to be equal using the equality constraint `(e)`. Notice the `.` beside `y1`, `y2`, etc.: this indicates that the listed variance refers to an endogenous variable, and that it is thus an error variance. In this case, these refer to the variances of $\varepsilon_{t}$. After that, the variances of the exogenous variables, both observed and unobserved are listed. 
+
+```{r variance, echo=FALSE, output.lines=67:79}
+summary(fe_sem.fit)
+```
+
+# Extensions {#extensions}
+
+## Relaxing assumptions meant to mimic traditional FE models {#relax}
+
+There are a number of implicit assumptions attached to the typical FE model that can be relaxed in SEM. Some of these assumptions have been discussed already, and a fairly comprehenisve list of assumptions can be found in @Bollen2010. Here, I will go over just a few, concentrating on the implementation in `lavaan` and the opportunity to empirically test whether the adjustments are justified or not. 
+
+The assumptions we will discuss here pertain to the time-invariance of the effects of both the latent individual effects and the observed covariates, as well as a time-invariant error variance. We can also empirically test the correlation between the individual effects and the covariates to see whether a RE model is preferable to the FE model. 
+
+For example, we can rewrite the original FE equation as
+\begin{align}
+y_{it} & = \beta_{t}x_{it} + \lambda_{t}\alpha_{i} + \varepsilon_{it}
+\end{align}
+where $\beta$ becomes $\beta_{t}$ and the implicit regression weight of one turns to $\lambda_{t}$ to highlight the fact that the effect of $x$ as well as $\alpha$ on $y$ may vary over time. We can furthermore easily relax the assumption of time-constant error variance, i.e., $\sigma^{2}_{\varepsilon_{t}}$. As noted in the [main article](https://github.com/henrik-andersen/FE-SEM/blob/master/article.pdf), the assumption regarding $\E[\alpha x_{t}]$ in $\bm{\Psi}$ determines whether we have an FE or RE model. We can set these to zero and test whether the RE model would be preferable to the FE model. In general, if the individual effects are truly uncorrelated with the model covariates, it is advisable to switch to an RE model since because it uses up less degrees of freedom, it will have smaller standard errors [@Bollen2010]. 
+
+In the following `lavaan` code, we simply remove the factor loadings of one for the latent individual effect variable which allows them to be estimated freely at each timepoint. For the effect of the covariate, we can either delete the constraints `b` in `yt ~ b*xt` or give each regression a different label, e.g., `b1`, `b2`, `b3`, etc. Similarly, to allow the error variance to vary over time, we turn the constraints `e` into simple labels, i.e., `e1`, `e2`, `e3`, etc., or again just delete them. In fact, regarding the error variances, they will be estimated necessarily, and do not need to be explicitly mentioned in the model syntax at all. Finally, to move from an FE to an RE model, we could simply constrain the correlations between the individual effects and the covariates to zero, i.e., `a ~~ 0*x1 + 0*x2 + 0*x3 + 0*x4 + 0*x5`. 
+
+```{r eval=FALSE, attr.source=".numberLines"}
+fe_sem_fullyrelaxed <- '
+# Define individual effects variable 
+a =~ y1 + y2 + y3 + y4 + y5
+# Regressions, constrain coefficient to be equal over time
+y1 ~ b1*x1
+y2 ~ b2*x2 
+y3 ~ b3*x3
+y4 ~ b4*x4
+y5 ~ b5*x5
+# Allow unrestricted correlation between eta and covariates
+a ~~ x1 + x2 + x3 + x4 + x5
+# Alternatively: constrain all to 0 for RE model, or
+# just individual correlations
+# a ~~ 0*x1 + 0*x2 + 0*x3 + 0*x4 + 0*x5
+x1 ~~ x2 + x3 + x4 + x5
+x2 ~~ x3 + x4 + x5
+x3 ~~ x4 + x5
+x4 ~~ x5
+# Constrain residual variances to be equal over time
+y1 ~~ e1*y1
+y2 ~~ e2*y2
+y3 ~~ e3*y3
+y4 ~~ e4*y4
+y5 ~~ e5*y5
+'
+fe_sem_fullyrelaxed.fit <- sem( model = fe_sem_fullyrelaxed, 
+                                data = dfw, 
+                                estimator = "ML")
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, error=FALSE, attr.source=".numberLines"}
+re_sem <- '
+# Define individual effects variable 
+a =~ 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5
+# Regressions, constrain coefficient to be equal over time
+y1 ~ b*x1
+y2 ~ b*x2 
+y3 ~ b*x3
+y4 ~ b*x4
+y5 ~ b*x5
+# Allow unrestricted correlation between eta and covariates
+a ~~ 0*x1 + 0*x2 + 0*x3 + 0*x4 + 0*x5
+x1 ~~ x2 + x3 + x4 + x5
+x2 ~~ x3 + x4 + x5
+x3 ~~ x4 + x5
+x4 ~~ x5
+# Constrain residual variances to be equal over time
+y1 ~~ e*y1
+y2 ~~ e*y2
+y3 ~~ e*y3
+y4 ~~ e*y4
+y5 ~~ e*y5
+'
+re_sem.fit <- sem( model = re_sem, 
+                   data = dfw, 
+                   estimator = "ML")
+```
+
+As outlined in @Bollen2010, the researcher has the opportunity to test each of the assumptions empirically and decide whether a more parsimonious, i.e., restrictive model is justifiable. For each assumption, a likelihood ratio test can be carried out to determine whether the improvement to model fit resulting from the relaxation of various assumptions is significant or whether the more parsimonious model is preferable after all. 
+
+If we use the original model `fe_sem.fit` (from the [main article](https://github.com/henrik-andersen/FE-SEM/blob/master/article.pdf)) as a starting point, the best strategy for testing these assumptions is to work in a stepwise fashion, relaxing one assumption at a time. We can begin by first constraining the correlation between $\alpha$ and $x_{t}$ to zero (`re_sem`) for an RE model. If turning from an FE to an RE model does not significantly worsen model fit, we can go forward with the rest of the steps with the RE model. If, however, the fit does worsen significantly, it is likely better to stick with the FE model; moving forward then with it to see if a less restrictive FE model is preferable. We can perform a likelihood ratio test in `R` using the `anova()` function:
+
+\small
+```{r}
+anova( fe_sem.fit, re_sem.fit)
+```
+\normalsize
+
+The table that is generated shows a comparison of the nested models, in decending order according to degrees of freedom. The RE model does not estimate the correlations between the individual effects and the covariates, so it is more parsimonious and thus listed at the bottom. The `Chisq` column shows the $\chi^{2}$ statistic for both models and the `Chisq diff` column calculates the difference between the two. Obviously, according to the DGP, the correlation between the individual effects and $x_{t}$ is not zero, so fixing these to zero leads to a substantial amount of misfit. The last column puts the $\chi^{2}$ difference in relation to the difference in degrees of freedom and gives a p-value for the probability that the difference is solely due to chance. Here, the change in $\chi^{2}$ is highly significant, so the FE model should be retained. 
+
+After now having established, based on the likelihood ratio test, that FE is our preferred model, we can begin relaxing the rest of the assumptions. I show the following merely as a demonstration of the procedure, we know already from the DGP that the parsimonious model as specified in `fe_sem.fit` is appropriate. We can next allow the error variances (`fe_semb.fit`), the effect of $x$ on $y$ (`fe_semc.fit`) and finally the factor loadings of the individual effects (`fe_semd.fit`) all to vary over time. 
+
+```{r echo=FALSE}
+fe_semb <- '
+# Define individual effects variable 
+a =~ 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5
+# Regressions, constrain coefficient to be equal over time
+y1 ~ b*x1
+y2 ~ b*x2 
+y3 ~ b*x3
+y4 ~ b*x4
+y5 ~ b*x5
+# Allow unrestricted correlation between eta and covariates
+a ~~ x1 + x2 + x3 + x4 + x5
+x1 ~~ x2 + x3 + x4 + x5
+x2 ~~ x3 + x4 + x5
+x3 ~~ x4 + x5
+x4 ~~ x5
+# Constrain residual variances to be equal over time
+y1 ~~ e1*y1
+y2 ~~ e2*y2
+y3 ~~ e3*y3
+y4 ~~ e4*y4
+y5 ~~ e5*y5
+'
+fe_semb.fit <- sem( model = fe_semb, 
+                   data = dfw, 
+                   estimator = "ML")
+
+fe_semc <- '
+# Define individual effects variable 
+a =~ 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5
+# Regressions, constrain coefficient to be equal over time
+y1 ~ b1*x1
+y2 ~ b2*x2 
+y3 ~ b3*x3
+y4 ~ b4*x4
+y5 ~ b5*x5
+# Allow unrestricted correlation between eta and covariates
+a ~~ x1 + x2 + x3 + x4 + x5
+x1 ~~ x2 + x3 + x4 + x5
+x2 ~~ x3 + x4 + x5
+x3 ~~ x4 + x5
+x4 ~~ x5
+# Constrain residual variances to be equal over time
+y1 ~~ e1*y1
+y2 ~~ e2*y2
+y3 ~~ e3*y3
+y4 ~~ e4*y4
+y5 ~~ e5*y5
+'
+fe_semc.fit <- sem( model = fe_semc, 
+                   data = dfw, 
+                   estimator = "ML")
+
+fe_semd <- '
+# Define individual effects variable 
+a =~ y1 + y2 + y3 + y4 + y5
+# Regressions, constrain coefficient to be equal over time
+y1 ~ b1*x1
+y2 ~ b2*x2 
+y3 ~ b3*x3
+y4 ~ b4*x4
+y5 ~ b5*x5
+# Allow unrestricted correlation between eta and covariates
+a ~~ x1 + x2 + x3 + x4 + x5
+x1 ~~ x2 + x3 + x4 + x5
+x2 ~~ x3 + x4 + x5
+x3 ~~ x4 + x5
+x4 ~~ x5
+# Constrain residual variances to be equal over time
+y1 ~~ e1*y1
+y2 ~~ e2*y2
+y3 ~~ e3*y3
+y4 ~~ e4*y4
+y5 ~~ e5*y5
+'
+fe_semd.fit <- sem( model = fe_semd, 
+                   data = dfw, 
+                   estimator = "ML")
+```
+
+\small
+```{r}
+anova( fe_sem.fit, fe_semb.fit, fe_semc.fit, fe_semd.fit)
+```
+\normalsize
+
+Keep in mind that a less parsimonious model (fewer degrees of freedom) can never fit worse than a more parsimonious one (more degrees of freedom). I.e., chance variations due to sampling error mean that adding constraints to a model will tend to always worsen fit, at least minimally. The question here is whether the improvement to fit by loosening constraints is meaningful or not. In the table above, we should not expect any meaningful improvements moving from `fe_sem.fit` to `fe_semd.fit`. Here, using simulated data, we have the luxury of knowing that any significant differences in $\chi^{2}$ are due to chance. With real data, it is up to the researcher to apply their best judgment and decide whether the results are plausible or not. 
+
+## Time-invariant predictors {#time-invariant}
+
+What if we do not just want to just control for the effects of all time-invariant variables, but investigate some of them in detail? Many time-invariant variables, like sex, birth cohort, nationality, education, etc. can be interesting on their own. And typically, many of these variables are readily available in a given dataset. The traditional OLS-based FE model does not allow for this, as it wipes out the effect of *all* time-invariant variables, whether observed or not. 
+
+In SEM, we can easily specify a type of *hybrid* FE/RE model [@Bollen2010] that allows us to control for time-invariant unobserved heterogeneity while also investigating the effects of specific observed time-invariant predictors.^[These types of models have become well known outside of SEM as well, see for example @Allison2011; @Schunck2013; @Bell2018.]
+
+In the next example, we continue with the most complex model we have specified so far, `fe_sem4.fit` in which measurement error in both the independent and dependent variables is accounted for using latent variables. Now, we would like as well to specifically investigate the effect of $\alpha_{2}$ on the dependent variable. The equation for this model changes to: $\eta_{t} = \beta \xi_{t} + \alpha + \gamma \alpha_{2} + \zeta_{t}$. 
+
+```{r eval=TRUE, attr.source=".numberLines"}
+fe_sem5 <- '
+# Measurement model for dependent variable, n for eta
+n1 =~ 1*y11 + y21 + y31
+n2 =~ 1*y12 + y22 + y32
+n3 =~ 1*y13 + y23 + y33
+n4 =~ 1*y14 + y24 + y34
+n5 =~ 1*y15 + y25 + y35
+# Define individual effects variable 
+a =~ 1*n1 + 1*n2 + 1*n3 + 1*n4 + 1*n5
+# Measurement model for independent variables, xi 
+xi1 =~ 1*x11 + x21 + x31 
+xi2 =~ 1*x12 + x22 + x32
+xi3 =~ 1*x13 + x23 + x33
+xi4 =~ 1*x14 + x24 + x34
+xi5 =~ 1*x15 + x25 + x35
+# Regressions, constrain coefficient to be equal over time
+n1 ~ b*xi1 + g*a2
+n2 ~ b*xi2 + g*a2
+n3 ~ b*xi3 + g*a2
+n4 ~ b*xi4 + g*a2
+n5 ~ b*xi5 + g*a2
+# Allow unrestricted correlation between eta and covariates
+a ~~ xi1 + xi2 + xi3 + xi4 + xi5 + 0*a2
+a2 ~~ xi1 + xi2 + xi3 + xi4 + xi5
+xi1 ~~ xi2 + xi3 + xi4 + xi5
+xi2 ~~ xi3 + xi4 + xi5
+xi3 ~~ xi4 + xi5
+xi4 ~~ xi5
+# Constrain residual variances to be equal over time
+n1 ~~ e*n1
+n2 ~~ e*n2
+n3 ~~ e*n3
+n4 ~~ e*n4
+n5 ~~ e*n5
+'
+fe_sem5.fit <- sem( model = fe_sem5, 
+                    data = dfw, 
+                    estimator = "ML")
+```
+
+Keep in mind, based on the DGP, the true parameters are $\beta = 0.3$ and $\gamma = 0.45$.
+
+```{r, output.lines=71:87, eval=TRUE}
+summary(fe_sem5.fit)
+```
+
+From this we can see that such a hybrid model is does a good job of estimating the coefficients of interest, with $\hat{\beta} =$ `r round( lavInspect( fe_sem5.fit, "list")[ 36, 14], 3)` (`r round( lavInspect( fe_sem5.fit, "list")[ 36, 15], 3)`) and $\hat{\gamma} =$ `r round( lavInspect( fe_sem5.fit, "list")[ 37, 14], 3)` (`r round( lavInspect( fe_sem5.fit, "list")[ 37, 15], 3)`). 
+
+It is important, however, to realize that the unbiasedness of $\hat{\gamma}$ in this model is dependent on the assumption that $\E[\zeta | \bm{\xi_{t}}, \alpha_{2}] = 0$. In other words, the idiosyncratic error is mean independent of $\bm{\xi_{t}} = (\xi_{1}, \xi_{2}, ..., \xi_{T})$ as well as $\alpha_{2}$. The first part is easier to accept because we are controlling for all potential time-invariant confounders that could induce a relationship between the independent variable and the error. The unbiasedness of $\hat{\gamma}$, on the other hand rests on the assumption that the time-invariant predictor is independent of the error. If $\alpha_{2}$ represented the respondent's intelligence and $\eta_{t}$, the dependent variable, represented the respondent's income, for example, then $\hat{\gamma}$ would be biased if both were dependent on a third time-invariant variable, say level of schooling, if it is not controlled for. For this reason, we need to treat the regression on a time-invariant predictor like any other regular multivariate regression model and look to include all plausible potential confounders as controls in the model, or turn to other methods, e.g., instrumental variables. 
+
+# Conclusion 
+
+Fixed effects regression in SEM has been outlined in well-known articles by [@Allison2011; @Bollen2010; @Teachman2001]. This article provides a focused look at the implementation of the basic model using the `lavaan` package in `R`. The [online supplementary materials](https://github.com/henrik-andersen/FE-SEM/blob/master/extensions.pdf) further discuss common extensions and some tools for evaluating and loosening model assumptions.
+
+The benefits of FE-SEM as opposed to traditional OLS-based FE-models are largely the same ones that apply to the SEM framework in general: for one, SEM allows for a great deal of flexibility. For example, it is easy to loosen model constraints as necessary. Measurement error in both the dependent and independent variables can be dealt with using latent variables to achieve unbiased and more efficient results. Researchers interested in time-invariant predictors can integrate them into a hybrid FE/RE model with ease. Further extensions, like measurement invariance testing [@Schoot2012; @Millsap2011; @Steenkamp1998] as well as lagged dependent variables [@Bollen2010; @Allison2017] for example, can also be implemented in a straightforward fashion. 
+
+The most basic FE-SEM is furthermore the basis for a variety of currently popular extended models, such as Latent Curve Models in general [@Curran2001; @Bollen2004], as well as special implementations like the Dynamic Panel Model [@Allison2017], the Random-Intercept Cross-Lagged Panel Model [@Hamaker2015] and the Latent Curve Model with Structured Residuals [@Curran2014]. For this reason it is all the more important for researchers to have a good grasp on the method of applying panel regression in SEM, and understanding the intuition of controlling for time-invariant confounders. This article is meant to serve as a consolidated resource for researchers looking for concrete advise on specifying FE and more general panel models in SEM. 
+
+# References 

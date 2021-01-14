@@ -67,6 +67,7 @@
 \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
 \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
 
+% Pandoc citation processing
 
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
@@ -94,6 +95,7 @@
 \def\tightlist{}
 \pagenumbering{gobble}
 
+
 \begin{document}
 
 \articletype{}
@@ -103,11 +105,13 @@ modeling using \texttt{lavaan}}
 
 
 \author{\name{Henrik Kenneth Andersen$^{a}$}
-\affil{$^{a}$Chemnitz University of Technology, Institute of Sociology, Chair for
-Empirical Social Research, Thüringer Weg 9, 09126 Chemnitz, Germany}
+\affil{$^{a}$Chemnitz University of Technology, Institute of Sociology,
+Chair for Empirical Social Research, Thüringer Weg 9, 09126 Chemnitz,
+Germany}
 }
 
-\thanks{CONTACT Henrik Kenneth Andersen. Email: \href{mailto:henrik.andersen@soziologie.tu-chemnitz.de}{\nolinkurl{henrik.andersen@soziologie.tu-chemnitz.de}}}
+\thanks{CONTACT Henrik Kenneth
+Andersen. Email: \href{mailto:henrik.andersen@soziologie.tu-chemnitz.de}{\nolinkurl{henrik.andersen@soziologie.tu-chemnitz.de}}}
 
 \maketitle
 
@@ -508,11 +512,11 @@ time-invariant unobserved heterogeneity. The dependent variable at each
 timepoint is regressed onto the latent variable, see Figure
 \ref{fig:fesem}. Here, the regression weights or `factor loadings' are
 fixed to one to represent our assumption that the effect of the
-time-invariant unobserved heterogeneity is constant over time.\footnote{In
-  fact, the initial FE-SEM setup shown in the main article mimics the
-  POLS methods described above in that it assumes constant effects and
-  error variances over time. These assumptions can be loosened and
-  tested, as will be shown in the
+time-invariant unobserved heterogeneity is constant over
+time.\footnote{In fact, the initial FE-SEM setup shown in the main
+  article mimics the POLS methods described above in that it assumes
+  constant effects and error variances over time. These assumptions can
+  be loosened and tested, as will be shown in the
   \href{https://github.com/henrik-andersen/FE-SEM/blob/master/extensions.pdf}{supplementary
   materials}. For now, for the sake of simplicity and comparability, we
   retain the assumptions associated with the `pooled' models for the
@@ -939,7 +943,7 @@ that use the stacked long-format data.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{a =}\ErrorTok{~}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y1 }\OperatorTok{+}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y2 }\OperatorTok{+}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y3 }\OperatorTok{+}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y4 }\OperatorTok{+}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y5}
+\NormalTok{a =}\ErrorTok{\textasciitilde{}}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y1 }\OperatorTok{+}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y2 }\OperatorTok{+}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y3 }\OperatorTok{+}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y4 }\OperatorTok{+}\StringTok{ }\DecValTok{1}\OperatorTok{*}\NormalTok{y5}
 \end{Highlighting}
 \end{Shaded}
 
@@ -960,11 +964,11 @@ interest \(\beta\):
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{y1 }\OperatorTok{~}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x1}
-\NormalTok{y2 }\OperatorTok{~}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x2 }
-\NormalTok{y3 }\OperatorTok{~}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x3}
-\NormalTok{y4 }\OperatorTok{~}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x4}
-\NormalTok{y5 }\OperatorTok{~}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x5}
+\NormalTok{y1 }\OperatorTok{\textasciitilde{}}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x1}
+\NormalTok{y2 }\OperatorTok{\textasciitilde{}}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x2 }
+\NormalTok{y3 }\OperatorTok{\textasciitilde{}}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x3}
+\NormalTok{y4 }\OperatorTok{\textasciitilde{}}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x4}
+\NormalTok{y5 }\OperatorTok{\textasciitilde{}}\StringTok{ }\NormalTok{b}\OperatorTok{*}\NormalTok{x5}
 \end{Highlighting}
 \end{Shaded}
 
@@ -989,11 +993,11 @@ a variable and itself, i.e., variances) are specified using the
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{a }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{x1 }\OperatorTok{+}\StringTok{ }\NormalTok{x2 }\OperatorTok{+}\StringTok{ }\NormalTok{x3 }\OperatorTok{+}\StringTok{ }\NormalTok{x4 }\OperatorTok{+}\StringTok{ }\NormalTok{x5}
-\NormalTok{x1 }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{x2 }\OperatorTok{+}\StringTok{ }\NormalTok{x3 }\OperatorTok{+}\StringTok{ }\NormalTok{x4 }\OperatorTok{+}\StringTok{ }\NormalTok{x5}
-\NormalTok{x2 }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{x3 }\OperatorTok{+}\StringTok{ }\NormalTok{x4 }\OperatorTok{+}\StringTok{ }\NormalTok{x5}
-\NormalTok{x3 }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{x4 }\OperatorTok{+}\StringTok{ }\NormalTok{x5}
-\NormalTok{x4 }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{x5}
+\NormalTok{a }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{x1 }\OperatorTok{+}\StringTok{ }\NormalTok{x2 }\OperatorTok{+}\StringTok{ }\NormalTok{x3 }\OperatorTok{+}\StringTok{ }\NormalTok{x4 }\OperatorTok{+}\StringTok{ }\NormalTok{x5}
+\NormalTok{x1 }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{x2 }\OperatorTok{+}\StringTok{ }\NormalTok{x3 }\OperatorTok{+}\StringTok{ }\NormalTok{x4 }\OperatorTok{+}\StringTok{ }\NormalTok{x5}
+\NormalTok{x2 }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{x3 }\OperatorTok{+}\StringTok{ }\NormalTok{x4 }\OperatorTok{+}\StringTok{ }\NormalTok{x5}
+\NormalTok{x3 }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{x4 }\OperatorTok{+}\StringTok{ }\NormalTok{x5}
+\NormalTok{x4 }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{x5}
 \end{Highlighting}
 \end{Shaded}
 
@@ -1011,11 +1015,11 @@ variances of \emph{residuals}, i.e., \(\varepsilon_{t}\).
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{y1 }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y1}
-\NormalTok{y2 }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y2}
-\NormalTok{y3 }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y3}
-\NormalTok{y4 }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y4}
-\NormalTok{y5 }\OperatorTok{~}\ErrorTok{~}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y5}
+\NormalTok{y1 }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y1}
+\NormalTok{y2 }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y2}
+\NormalTok{y3 }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y3}
+\NormalTok{y4 }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y4}
+\NormalTok{y5 }\OperatorTok{\textasciitilde{}}\ErrorTok{\textasciitilde{}}\StringTok{ }\NormalTok{e}\OperatorTok{*}\NormalTok{y5}
 \end{Highlighting}
 \end{Shaded}
 
@@ -1072,29 +1076,29 @@ Now, we run the FE-SEM in \texttt{lavaan}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{fe_sem <-}\StringTok{ '}
-\StringTok{# Define individual effects variable }
-\StringTok{a =~ 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5}
-\StringTok{# Regressions, constrain coefficient to be equal over time}
-\StringTok{y1 ~ b*x1}
-\StringTok{y2 ~ b*x2 }
-\StringTok{y3 ~ b*x3}
-\StringTok{y4 ~ b*x4}
-\StringTok{y5 ~ b*x5}
-\StringTok{# Allow unrestricted correlation between eta and covariates}
-\StringTok{a ~~ x1 + x2 + x3 + x4 + x5}
-\StringTok{x1 ~~ x2 + x3 + x4 + x5}
-\StringTok{x2 ~~ x3 + x4 + x5}
-\StringTok{x3 ~~ x4 + x5}
-\StringTok{x4 ~~ x5}
-\StringTok{# Constrain residual variances to be equal over time}
-\StringTok{y1 ~~ e*y1}
-\StringTok{y2 ~~ e*y2}
-\StringTok{y3 ~~ e*y3}
-\StringTok{y4 ~~ e*y4}
-\StringTok{y5 ~~ e*y5}
-\StringTok{'}
-\NormalTok{fe_sem.fit <-}\StringTok{ }\KeywordTok{sem}\NormalTok{(}\DataTypeTok{model =}\NormalTok{ fe_sem, }
+\NormalTok{fe\_sem \textless{}{-}}\StringTok{ \textquotesingle{}}
+\StringTok{\# Define individual effects variable }
+\StringTok{a =\textasciitilde{} 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5}
+\StringTok{\# Regressions, constrain coefficient to be equal over time}
+\StringTok{y1 \textasciitilde{} b*x1}
+\StringTok{y2 \textasciitilde{} b*x2 }
+\StringTok{y3 \textasciitilde{} b*x3}
+\StringTok{y4 \textasciitilde{} b*x4}
+\StringTok{y5 \textasciitilde{} b*x5}
+\StringTok{\# Allow unrestricted correlation between eta and covariates}
+\StringTok{a \textasciitilde{}\textasciitilde{} x1 + x2 + x3 + x4 + x5}
+\StringTok{x1 \textasciitilde{}\textasciitilde{} x2 + x3 + x4 + x5}
+\StringTok{x2 \textasciitilde{}\textasciitilde{} x3 + x4 + x5}
+\StringTok{x3 \textasciitilde{}\textasciitilde{} x4 + x5}
+\StringTok{x4 \textasciitilde{}\textasciitilde{} x5}
+\StringTok{\# Constrain residual variances to be equal over time}
+\StringTok{y1 \textasciitilde{}\textasciitilde{} e*y1}
+\StringTok{y2 \textasciitilde{}\textasciitilde{} e*y2}
+\StringTok{y3 \textasciitilde{}\textasciitilde{} e*y3}
+\StringTok{y4 \textasciitilde{}\textasciitilde{} e*y4}
+\StringTok{y5 \textasciitilde{}\textasciitilde{} e*y5}
+\StringTok{\textquotesingle{}}
+\NormalTok{fe\_sem.fit \textless{}{-}}\StringTok{ }\KeywordTok{sem}\NormalTok{(}\DataTypeTok{model =}\NormalTok{ fe\_sem, }
                   \DataTypeTok{data =}\NormalTok{ dfw, }
                   \DataTypeTok{estimator =} \StringTok{"ML"}\NormalTok{)}
 \end{Highlighting}
@@ -1137,12 +1141,12 @@ name of the fitted model, in this case \texttt{fe\_sem.fit}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{summary}\NormalTok{(fe_sem.fit)}
+\KeywordTok{summary}\NormalTok{(fe\_sem.fit)}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## lavaan 0.6-6 ended normally after 37 iterations
+## lavaan 0.6-7 ended normally after 37 iterations
 ## 
 ##   Estimator                                         ML
 ##   Optimization method                           NLMINB
